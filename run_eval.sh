@@ -1,0 +1,31 @@
+#!/bin/sh
+
+set -x
+
+EXPERIMENT="trial_4"
+
+DATA_DIR="/afs/cs.pitt.edu/usr0/miz44/mimic_project/data/"
+LOG_DIR="/afs/cs.pitt.edu/usr0/miz44/mimic_project/logs"
+
+mkdir -p ${LOG_DIR}
+
+python code/main.py \
+  --phase="inference" \
+  --batch_size=1024 \
+  --input_size=128 \
+  --output_size=128 \
+  --nobidirectional \
+  --num_epochs=30 \
+  --learning_rate=1e-3 \
+  --data_split="train" \
+  --data_dir="${DATA_DIR}" \
+  --target_label="discharge" \
+  --history_window=8 \
+  --prediction_window=2 \
+  --dataset_size=50000 \
+  --standardize \
+  --checkpoint_dir="/afs/cs.pitt.edu/usr0/miz44/mimic_project/experiments" \
+  --rnn_type="lstm" \
+  --rnn_layers=1 \
+  --rnn_dropout=0 \
+  --experiment_name="${EXPERIMENT}" >> ${LOG_DIR}/${EXPERIMENT}_eval.log 2>&1 &
