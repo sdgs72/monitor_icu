@@ -17,17 +17,19 @@ from sklearn.externals import joblib
 
 class MimicDataset(torch.utils.data.Dataset):
 
-  def __init__(self,
-               data_split,
-               data_dir,
-               target_label,
-               history_window,
-               prediction_window,
-               dataset_size=10000,
-               pca_dim=None,
-               pca_decomposer_path=None,
-               standardize=True,
-               standard_scaler_path=None):
+  def __init__(
+      self,
+      data_split,
+      data_dir,
+      target_label,
+      history_window,
+      prediction_window,
+      dataset_size,
+      pca_dim,
+      pca_decomposer_path,
+      standardize,
+      standard_scaler_path,
+  ):
     """Initializes dataset.
 
     Args:
@@ -36,7 +38,8 @@ class MimicDataset(torch.utils.data.Dataset):
       target_label: `death`, `discharge` or `sepsis`.
       history_window: Length of history events in blocks.
       prediction_window: Length of target event occurrence in future blocks.
-      dataset_size: Size of generated dataset.
+      dataset_size: Size of generated dataset. If 0, then use all positive data
+          with equal size of negative samples.
       pca_dim: Whether to perform pca for reduced dimensionality.
       pca_decomposer_path: Path to precomputed (on `train`) pca decomposer.
       standardize: Whether to standardize inputs for zero mean and unit variance.
@@ -64,7 +67,7 @@ class MimicDataset(torch.utils.data.Dataset):
         os.path.join(self.data_dir, self.data_name % self.data_split)).item()
 
     self.labels, self.durations = self._load_labels()
-    self.sample_list = self._sample_data()
+    self.resample()
 
     if self.pca_dim or self.standardize:
       self.decomposer, self.standard_scaler = self._preprocessing()
@@ -84,6 +87,11 @@ class MimicDataset(torch.utils.data.Dataset):
       data = self.standard_scaler.transform(data)
 
     return data.astype(np.float32), label
+
+  def resample(self):
+    logging.info("Resample dataset.")
+    self.sample_list = self._sample_data()
+    return
 
   def _preprocessing(self):
     decomposer, standard_scaler = None, None
@@ -132,6 +140,18 @@ class MimicDataset(torch.utils.data.Dataset):
 
   def _sample_data(self):
     negatives, positives = self._generate_candidates()
+
+    logging.log_first_n(logging.INFO, "Positive candidates: %d", 1,
+                        len(positives))
+    logging.log_first_n(logging.INFO, "Negative candidates: %d", 1,
+                        len(negatives))
+
+    if self.dataset_size == 0:
+      self.dataset_size = len(positives) * 2
+      logging.info("Dataset use default size:")
+      logging.info("Use all %d positive samples", len(positives))
+      logging.info("Sample equal size of negative samples from %d candidates",
+                   len(negatives))
 
     sample_list = random.choices(negatives, k=self.dataset_size // 2)
     sample_list += random.choices(
