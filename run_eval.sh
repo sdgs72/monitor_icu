@@ -2,7 +2,8 @@
 
 set -x
 
-EXPERIMENT="trial_2"
+TARGET="death"
+EXPERIMENT="${TARGET}_2"
 
 DATA_DIR="/afs/cs.pitt.edu/usr0/miz44/mimic_project/data/"
 LOG_DIR="/afs/cs.pitt.edu/usr0/miz44/mimic_project/logs"

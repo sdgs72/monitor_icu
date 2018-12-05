@@ -14,7 +14,7 @@ import sklearn
 import time
 import torch
 
-from model_builder import RNNModel
+from model_builder import MimicModel
 from dataset import MimicDataset
 
 FLAGS = flags.FLAGS
@@ -50,6 +50,9 @@ flags.DEFINE_enum("rnn_type", "lstm", ["lstm", "gru"],
                   "Type of RNN modules for experiments.")
 flags.DEFINE_integer("rnn_layers", 1, "Number of layers tacked in RNN modules.")
 flags.DEFINE_float("rnn_dropout", 0.0, "Dropout rate in the RNN modules.")
+flags.DEFINE_enum("model_type", "rnn",
+                  ["lr", "rnn", "attentional_lr", "attentional_rnn"],
+                  "Type of model used for experiments.")
 
 
 def train(configs):
@@ -81,7 +84,8 @@ def train(configs):
       drop_last=False,
   )
 
-  model = RNNModel(
+  model = MimicModel(
+      model_type=configs["model_type"],
       input_size=configs["input_size"],
       hidden_size=configs["output_size"],
       rnn_type=configs["rnn_type"],
@@ -97,23 +101,34 @@ def train(configs):
 
   criterion = torch.nn.BCEWithLogitsLoss()
 
-  logging.info("Model parameters: %s", model.parameters())
+  trainable_params = [x for x in model.named_parameters() if x[1].requires_grad]
+
+  logging.info("Model parameters:")
+  for name, param in trainable_params:
+    logging.info("%s: %s", name, param.size())
+
   optimizer = torch.optim.Adam(model.parameters(), lr=FLAGS.learning_rate)
 
   logging.info("Initializatoin complete. Start training.")
   try:
     for epoch in range(FLAGS.num_epochs):
+      # Resample training dataset.
+      train_dataset.resample()
+      y_true, y_score = [], []
+
       start_time = time.time()
       for step, (inputs, labels) in enumerate(train_loader):
 
         optimizer.zero_grad()
 
         with torch.set_grad_enabled(True):
-          logits, _last_embedding, _full_embedding = model(inputs)
+          logits = model(inputs)
           loss = criterion(input=logits, target=labels.float())
-
           loss.backward()
           optimizer.step()
+
+        y_true.append(labels.detach().numpy())
+        y_score.append(logits.detach().numpy())
 
         if (step + 1) % 10 == 0:
           end_time = time.time()
@@ -121,37 +136,35 @@ def train(configs):
               'Epoch [{}/{}], Step [{}/{}], Loss: {:.6f}, Time: {:.2f}'.format(
                   epoch + 1, FLAGS.num_epochs, step + 1, len(train_loader),
                   loss.item(), (end_time - start_time) / 10))
-          y_true = labels.numpy()
-          y_score = logits.numpy()
-          y_pred = y_score > 0.5
-
-          logging.info("=" * 50)
-          logging.info("Total: %d", y_true.shape[0])
-          logging.info("Correct: %d", np.sum((y_true == y_pred)))
-          logging.info(
-              "Batch Accuracy: %.4f",
-              sklearn.metrics.accuracy_score(y_true=y_true, y_pred=y_pred))
-          logging.info("Batch F1 Score: %.4f",
-                       sklearn.metrics.f1_score(y_true=y_true, y_pred=y_pred))
-          logging.info(
-              "Batch ROC AUC Score: %.4f",
-              sklearn.metrics.roc_auc_score(y_true=y_true, y_score=y_score))
-          logging.info(
-              "Batch Classification Report:\n%s",
-              sklearn.metrics.classification_report(
-                  y_true=y_true,
-                  y_pred=y_pred,
-                  target_names=["negative", "positive"]))
-          logging.info("=" * 50)
           start_time = time.time()
+
+      y_true = np.concatenate(y_true, axis=None)
+      y_score = np.concatenate(y_score, axis=None)
+      y_pred = y_score > 0.5
+
+      logging.info("=" * 50)
+      logging.info("Epoch: %d", epoch + 1)
+      logging.info("Total: %d", y_true.shape[0])
+      logging.info("Correct: %d", np.sum((y_true == y_pred)))
+      logging.info("Epoch Accuracy: %.4f",
+                   sklearn.metrics.accuracy_score(y_true=y_true, y_pred=y_pred))
+      logging.info("Epoch F1 Score: %.4f",
+                   sklearn.metrics.f1_score(y_true=y_true, y_pred=y_pred))
+      logging.info(
+          "Epoch ROC AUC Score: %.4f",
+          sklearn.metrics.roc_auc_score(y_true=y_true, y_score=y_score))
+      logging.info(
+          "Epoch Classification Report:\n%s",
+          sklearn.metrics.classification_report(
+              y_true=y_true,
+              y_pred=y_pred,
+              target_names=["negative", "positive"]))
+      logging.info("=" * 50)
 
       logging.info("Saving model checkpoint...")
       checkpoint_name = os.path.join(root_dir,
                                      "checkpoint_epoch%02d.model" % (epoch + 1))
       torch.save(model.state_dict(), checkpoint_name)
-
-      # Resample training dataset.
-      train_dataset.resample()
 
   except KeyboardInterrupt:
     logging.info("Interruppted. Stop training.")
@@ -191,7 +204,8 @@ def inference(configs):
       drop_last=False,
   )
 
-  model = RNNModel(
+  model = MimicModel(
+      model_type=configs["model_type"],
       input_size=configs["input_size"],
       hidden_size=configs["output_size"],
       rnn_type=configs["rnn_type"],
@@ -221,7 +235,7 @@ def inference(configs):
     y_true, y_score = [], []
     with torch.set_grad_enabled(False):
       for i, (inputs, labels) in enumerate(eval_loader):
-        logits, _last_embedding, _full_embedding = model(inputs)
+        logits = model(inputs)
 
         y_true.append(labels.numpy())
         y_score.append(logits.numpy())
@@ -267,6 +281,7 @@ def save_and_load_flags():
     os.makedirs(root_dir)
 
     configs = {
+        "model_type": FLAGS.model_type,
         "input_size": FLAGS.input_size,
         "output_size": FLAGS.output_size,
         "rnn_type": FLAGS.rnn_type,
