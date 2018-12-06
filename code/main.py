@@ -11,11 +11,13 @@ import os
 import numpy as np
 import sys
 import sklearn
+from sklearn.externals import joblib
 import time
 import torch
 
 from model_builder import MimicModel
 from dataset import MimicDataset
+import utilities
 
 FLAGS = flags.FLAGS
 
@@ -54,6 +56,9 @@ flags.DEFINE_enum("model_type", "rnn",
                   ["lr", "rnn", "attentional_lr", "attentional_rnn"],
                   "Type of model used for experiments.")
 
+default_decomposer_name = "pca_decomposer.joblib"
+default_standard_scaler_name = "standard_scaler.joblib"
+
 
 def train(configs):
   root_dir = os.path.join(FLAGS.checkpoint_dir, FLAGS.experiment_name)
@@ -72,9 +77,9 @@ def train(configs):
       prediction_window=configs["prediction_window"],
       dataset_size=FLAGS.dataset_size,
       pca_dim=configs["input_size"],
-      pca_decomposer_path=os.path.join(root_dir, "pca_decomposer.skmodel"),
+      pca_decomposer_path=os.path.join(root_dir, default_decomposer_name),
       standardize=configs["standardize"],
-      standard_scaler_path=os.path.join(root_dir, "standard_scaler.skmodel"),
+      standard_scaler_path=os.path.join(root_dir, default_standard_scaler_name),
   )
 
   train_loader = torch.utils.data.DataLoader(
@@ -107,11 +112,16 @@ def train(configs):
   for name, param in trainable_params:
     logging.info("%s: %s", name, param.size())
 
-  optimizer = torch.optim.Adam(model.parameters(), lr=FLAGS.learning_rate)
+  optimizer = torch.optim.RMSprop(model.parameters(), lr=FLAGS.learning_rate)
+  scheduler = torch.optim.lr_scheduler.StepLR(
+      optimizer, step_size=10, gamma=0.3)
+
+  metrics = {}
 
   logging.info("Initializatoin complete. Start training.")
   try:
     for epoch in range(FLAGS.num_epochs):
+      scheduler.step()
       # Resample training dataset.
       train_dataset.resample()
       y_true, y_score = [], []
@@ -133,34 +143,14 @@ def train(configs):
         if (step + 1) % 10 == 0:
           end_time = time.time()
           logging.info(
-              'Epoch [{}/{}], Step [{}/{}], Loss: {:.6f}, Time: {:.2f}'.format(
-                  epoch + 1, FLAGS.num_epochs, step + 1, len(train_loader),
-                  loss.item(), (end_time - start_time) / 10))
+              'Epoch [{}/{}], Step [{}/{}], Loss: {:.6f}, Speed: {:.4f} ms'.
+              format(epoch + 1, FLAGS.num_epochs, step + 1, len(train_loader),
+                     loss.item(),
+                     (end_time - start_time) * 100 / logits.shape[0]))
           start_time = time.time()
 
-      y_true = np.concatenate(y_true, axis=None)
-      y_score = np.concatenate(y_score, axis=None)
-      y_pred = y_score > 0.5
-
-      logging.info("=" * 50)
-      logging.info("Epoch: %d", epoch + 1)
-      logging.info("Total: %d", y_true.shape[0])
-      logging.info("Correct: %d", np.sum((y_true == y_pred)))
-      logging.info("Epoch Accuracy: %.4f",
-                   sklearn.metrics.accuracy_score(y_true=y_true, y_pred=y_pred))
-      logging.info("Epoch F1 Score: %.4f",
-                   sklearn.metrics.f1_score(y_true=y_true, y_pred=y_pred))
-      logging.info(
-          "Epoch ROC AUC Score: %.4f",
-          sklearn.metrics.roc_auc_score(y_true=y_true, y_score=y_score))
-      logging.info(
-          "Epoch Classification Report:\n%s",
-          sklearn.metrics.classification_report(
-              y_true=y_true,
-              y_pred=y_pred,
-              target_names=["negative", "positive"]))
-      logging.info("=" * 50)
-
+      utilities.update_metrics(metrics, "epoch%d" % (epoch + 1), y_true,
+                               y_score)
       logging.info("Saving model checkpoint...")
       checkpoint_name = os.path.join(root_dir,
                                      "checkpoint_epoch%02d.model" % (epoch + 1))
@@ -174,7 +164,13 @@ def train(configs):
     torch.save(model.state_dict(), checkpoint_name)
 
     logging.info("Model saved at %s", checkpoint_name)
+  finally:
+    logging.info("Training is complete.")
+    metrics_path = "%s.joblib" % os.path.join(root_dir,
+                                              "metrics_epoch%d" % len(metrics))
+    joblib.dump(metrics, metrics_path)
 
+    logging.info("Metrics saved at %s.", metrics_path)
   return
 
 
@@ -192,15 +188,15 @@ def inference(configs):
       prediction_window=configs["prediction_window"],
       dataset_size=FLAGS.dataset_size,
       pca_dim=configs["input_size"],
-      pca_decomposer_path=os.path.join(root_dir, "pca_decomposer.skmodel"),
+      pca_decomposer_path=os.path.join(root_dir, default_decomposer_name),
       standardize=configs["standardize"],
-      standard_scaler_path=os.path.join(root_dir, "standard_scaler.skmodel"),
+      standard_scaler_path=os.path.join(root_dir, default_standard_scaler_name),
   )
 
   eval_loader = torch.utils.data.DataLoader(
       dataset=eval_dataset,
       batch_size=FLAGS.batch_size,
-      shuffle=False,
+      shuffle=True,
       drop_last=False,
   )
 
@@ -222,6 +218,7 @@ def inference(configs):
   for i, x in enumerate(model_checkpoints):
     logging.info("%d: %s", i, x)
 
+  metrics = {}
   for checkpoint_name in model_checkpoints:
     checkpoint_path = os.path.join(root_dir, checkpoint_name)
 
@@ -243,27 +240,15 @@ def inference(configs):
         if (i + 1) % 10 == 0:
           logging.info("Progress: %d / %d", i + 1, len(eval_loader))
 
-      y_true = np.concatenate(y_true, axis=None)
-      y_score = np.concatenate(y_score, axis=None)
-      y_pred = y_score > 0.5
+      utilities.update_metrics(metrics, checkpoint_name, y_true, y_score)
 
-      logging.info("=" * 50)
-      logging.info("Total: %d", y_true.shape[0])
-      logging.info("Correct: %d", np.sum((y_true == y_pred)))
-      logging.info("Accuracy: %.4f",
-                   sklearn.metrics.accuracy_score(y_true=y_true, y_pred=y_pred))
-      logging.info("F1 Score: %.4f",
-                   sklearn.metrics.f1_score(y_true=y_true, y_pred=y_pred))
-      logging.info(
-          "ROC AUC Score: %.4f",
-          sklearn.metrics.roc_auc_score(y_true=y_true, y_score=y_score))
-      logging.info(
-          "Classification Report:\n%s",
-          sklearn.metrics.classification_report(
-              y_true=y_true,
-              y_pred=y_pred,
-              target_names=["negative", "positive"]))
-      logging.info("=" * 50)
+  logging.info("Evaluation on %d models complete.", len(model_checkpoints))
+  metrics_path = "%s.joblib" % os.path.join(
+      root_dir, "eval_metrics_%s" % FLAGS.data_split)
+  joblib.dump(metrics, metrics_path)
+
+  logging.info("Metrics saved at %s.", metrics_path)
+
   return
 
 

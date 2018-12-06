@@ -153,6 +153,13 @@ class MimicDataset(torch.utils.data.Dataset):
       logging.info("Sample equal size of negative samples from %d candidates",
                    len(negatives))
 
+    if self.dataset_size == -1:
+      logging.info("Using all possible candidates without sampling.")
+      logging.warn(
+          "WARN: The dataset might be extremely unbalanced and should be used in inference only."
+      )
+      return negatives + positives
+
     sample_list = random.choices(negatives, k=self.dataset_size // 2)
     sample_list += random.choices(
         positives, k=self.dataset_size - self.dataset_size // 2)
