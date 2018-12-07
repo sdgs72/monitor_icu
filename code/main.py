@@ -153,21 +153,21 @@ def train(configs):
                                y_score)
       logging.info("Saving model checkpoint...")
       checkpoint_name = os.path.join(root_dir,
-                                     "checkpoint_epoch%02d.model" % (epoch + 1))
+                                     "checkpoint_epoch%03d.model" % (epoch + 1))
       torch.save(model.state_dict(), checkpoint_name)
 
   except KeyboardInterrupt:
     logging.info("Interruppted. Stop training.")
     logging.info("Saving model checkpoint...")
     checkpoint_name = os.path.join(
-        root_dir, "checkpoint_epoch%02d_step%03d.model" % (epoch + 1, step + 1))
+        root_dir, "checkpoint_epoch%03d_step%03d.model" % (epoch + 1, step + 1))
     torch.save(model.state_dict(), checkpoint_name)
 
     logging.info("Model saved at %s", checkpoint_name)
   finally:
     logging.info("Training is complete.")
-    metrics_path = "%s.joblib" % os.path.join(root_dir,
-                                              "metrics_epoch%d" % len(metrics))
+    metrics_path = "%s.joblib" % os.path.join(
+        root_dir, "train_metrics_%d_epochs" % len(metrics))
     joblib.dump(metrics, metrics_path)
 
     logging.info("Metrics saved at %s.", metrics_path)
