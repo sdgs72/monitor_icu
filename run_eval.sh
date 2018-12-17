@@ -2,10 +2,10 @@
 
 set -x
 
-EXPERIMENT="death_attentional_gru"
+EXPERIMENT="death_lstm_pw_8"
 
 DATA_DIR="/afs/cs.pitt.edu/usr0/miz44/mimic_project/data/"
-LOG_DIR="/afs/cs.pitt.edu/usr0/miz44/mimic_project/logs"
+LOG_DIR="/afs/cs.pitt.edu/usr0/miz44/mimic_project/logs/"
 
 mkdir -p ${LOG_DIR}
 

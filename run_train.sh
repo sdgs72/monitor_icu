@@ -2,8 +2,8 @@
 
 set -x
 
-TARGET="death"
-EXPERIMENT="${TARGET}_attentional_bi_lstm"
+TARGET="sepsis"
+EXPERIMENT="${TARGET}_lstm"
 
 DATA_DIR="/afs/cs.pitt.edu/usr0/miz44/mimic_project/data/"
 LOG_DIR="/afs/cs.pitt.edu/usr0/miz44/mimic_project/logs"
@@ -12,13 +12,13 @@ mkdir -p ${LOG_DIR}
 
 python code/main.py \
   --phase="train" \
-  --model_type="attentional_rnn" \
+  --model_type="rnn" \
   --rnn_type="lstm" \
-  --bidirectional \
+  --nobidirectional \
   --batch_size=128 \
   --input_size=256 \
-  --output_size=256 \
-  --num_epochs=50 \
+  --output_size=64 \
+  --num_epochs=100 \
   --learning_rate=1e-2 \
   --data_split="train" \
   --data_dir="${DATA_DIR}" \

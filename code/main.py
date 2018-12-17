@@ -114,7 +114,7 @@ def train(configs):
 
   optimizer = torch.optim.RMSprop(model.parameters(), lr=FLAGS.learning_rate)
   scheduler = torch.optim.lr_scheduler.StepLR(
-      optimizer, step_size=10, gamma=0.3)
+      optimizer, step_size=FLAGS.num_epochs // 5, gamma=0.3)
 
   metrics = {}
 
@@ -132,7 +132,7 @@ def train(configs):
         optimizer.zero_grad()
 
         with torch.set_grad_enabled(True):
-          logits = model(inputs)
+          logits, _ = model(inputs)
           loss = criterion(input=logits, target=labels.float())
           loss.backward()
           optimizer.step()
@@ -230,9 +230,13 @@ def inference(configs):
     logging.info("Initializatoin complete. Start inference.")
 
     y_true, y_score = [], []
+    attention_scores = []
     with torch.set_grad_enabled(False):
       for i, (inputs, labels) in enumerate(eval_loader):
-        logits = model(inputs)
+        logits, endpoints = model(inputs)
+
+        if endpoints and "attention_score" in endpoints:
+          attention_scores.append(endpoints["attention_score"].numpy())
 
         y_true.append(labels.numpy())
         y_score.append(logits.numpy())
@@ -246,6 +250,10 @@ def inference(configs):
   metrics_path = "%s.joblib" % os.path.join(
       root_dir, "eval_metrics_%s" % FLAGS.data_split)
   joblib.dump(metrics, metrics_path)
+
+  attention_path = "%s.joblib" % os.path.join(
+      root_dir, "attention_scores_%s" % FLAGS.data_split)
+  joblib.dump([attention_scores, y_true, y_score], attention_path)
 
   logging.info("Metrics saved at %s.", metrics_path)
 

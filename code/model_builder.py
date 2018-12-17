@@ -105,7 +105,9 @@ class MimicModel(torch.nn.Module):
 
     logits = self.rnn_linear(output_embedding).squeeze(1)
 
-    return logits
+    endpoints = {"aux_states": aux_states}
+
+    return logits, None
 
   def _attentional_rnn_forward(self, inputs):
     outputs, aux_states = self.rnn_module(inputs)
@@ -116,16 +118,23 @@ class MimicModel(torch.nn.Module):
     output_embedding = torch.sum(attention_score * outputs, dim=1)
     logits = self.rnn_linear(output_embedding).squeeze(1)
 
-    return logits
+    endpoints = {
+        "attention_score": attention_score,
+        "aux_states": aux_states,
+    }
+
+    return logits, None
 
   def _lr_forward(self, inputs):
     inputs = torch.mean(inputs, dim=1)
     logits = self.lr_linear(inputs).squeeze(1)
-    return logits
+
+    return logits, None
 
   def _attentional_lr_forward(self, inputs):
     attention = self.attention_layer(inputs)
     attention_score = torch.nn.functional.softmax(attention, dim=1)
     output_embedding = torch.sum(attention_score * inputs, dim=1)
     logits = self.lr_linear(output_embedding).squeeze(1)
-    return logits
+    endpoints = {"attention_score": attention_score}
+    return logits, endpoints
