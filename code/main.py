@@ -22,39 +22,45 @@ import utilities
 FLAGS = flags.FLAGS
 
 flags.DEFINE_enum(
-    "phase", "train", ["train", "inference"],
-    "Specifies whether to train a model or run inference on pretrained models.")
+    "phase", "train", ["train", "inference", "pipeline"],
+    "Specifies whether to train a model, run inference on pretrained models, "
+    "or perform evaluation on-the-fly together with training.")
 flags.DEFINE_integer("batch_size", 512, "Number of instances in a batch.")
 flags.DEFINE_integer("input_size", 256, "Number of features of the input.")
 flags.DEFINE_integer(
-    "output_size", 256,
+    "rnn_hidden_size", 256,
     "Number of the features of the output embedding from the rnn module.")
-flags.DEFINE_boolean("bidirectional", False,
+flags.DEFINE_boolean("rnn_bidirectional", False,
                      "Whether to use bidirectional RNN model.")
 flags.DEFINE_integer("num_epochs", 10, "Number of epochs for training.")
-flags.DEFINE_float("learning_rate", 1e-3, "Learning rate for model training.")
+flags.DEFINE_float("learning_rate", 1e-2, "Learning rate for model training.")
 flags.DEFINE_enum("data_split", "train", ["train", "val", "test"],
                   "Specifies the `train`, `val` or `test` data being used.")
 flags.DEFINE_string("data_dir", "../data/", "Directory path to data.")
-flags.DEFINE_enum("target_label", "death", ["discharge", "death", "sepsis"], "")
+flags.DEFINE_enum("target_label", "death", ["discharge", "death", "sepsis"],
+                  "Target critical event.")
 flags.DEFINE_integer("history_window", 8,
                      "Number of blocks (6h/block) in history.")
 flags.DEFINE_integer("prediction_window", 2,
                      "Number of blocks in future for prediction.")
+flags.DEFINE_integer("block_size", 6, "Number of hours in a single block.")
 flags.DEFINE_integer(
     "dataset_size", 0,
-    "Number of instances in the each epoch. If 0 use auto mode.")
+    "Number of instances in the each epoch. If 0 use auto-balancing mode.")
 flags.DEFINE_boolean("standardize", True, "Whether to standardize input data.")
 flags.DEFINE_string("checkpoint_dir", "./",
                     "Directory where trained models are stored.")
 flags.DEFINE_string("experiment_name", None, "Identifies the experiments.")
-flags.DEFINE_enum("rnn_type", "lstm", ["lstm", "gru"],
+flags.DEFINE_enum("rnn_type", "gru", ["lstm", "gru"],
                   "Type of RNN modules for experiments.")
 flags.DEFINE_integer("rnn_layers", 1, "Number of layers tacked in RNN modules.")
 flags.DEFINE_float("rnn_dropout", 0.0, "Dropout rate in the RNN modules.")
-flags.DEFINE_enum("model_type", "rnn",
-                  ["lr", "rnn", "attentional_lr", "attentional_rnn"],
+flags.DEFINE_enum("model_type", "rnn", ["lr", "rnn"],
                   "Type of model used for experiments.")
+flags.DEFINE_boolean("use_attention", False,
+                     "Whether to use attention mechanism or not.")
+flags.DEFINE_enum("lr_pooling", "mean", ["mean", "max", "last", "concat"],
+                  "Specifies pooling strategies for logistic regression.")
 
 default_decomposer_name = "pca_decomposer.joblib"
 default_standard_scaler_name = "standard_scaler.joblib"
@@ -69,9 +75,11 @@ def train(configs):
       logging.info("%d: %s", i, x)
       fp.write("%s \\\n" % x)
 
+  logging.info("Creating dataset...")
   train_dataset = MimicDataset(
       data_split=FLAGS.data_split,
       data_dir=configs["data_dir"],
+      block_size=configs["block_size"],
       target_label=configs["target_label"],
       history_window=configs["history_window"],
       prediction_window=configs["prediction_window"],
@@ -81,23 +89,31 @@ def train(configs):
       standardize=configs["standardize"],
       standard_scaler_path=os.path.join(root_dir, default_standard_scaler_name),
   )
+  logging.info("Creating dataset completed!")
 
+  logging.info("Creating dataset loader...")
   train_loader = torch.utils.data.DataLoader(
       dataset=train_dataset,
       batch_size=FLAGS.batch_size,
       shuffle=True,
       drop_last=False,
   )
+  logging.info("Creating dataset loader completed!")
 
+  logging.info("Creating model for training...")
   model = MimicModel(
       model_type=configs["model_type"],
       input_size=configs["input_size"],
-      hidden_size=configs["output_size"],
+      use_attention=configs["use_attention"],
+      rnn_hidden_size=configs["rnn_hidden_size"],
       rnn_type=configs["rnn_type"],
-      num_layers=configs["rnn_layers"],
-      dropout=configs["rnn_dropout"],
-      bidirectional=configs["bidirectional"],
+      rnn_layers=configs["rnn_layers"],
+      rnn_dropout=configs["rnn_dropout"],
+      rnn_bidirectional=configs["rnn_bidirectional"],
+      lr_pooling=configs["lr_pooling"],
+      lr_history_window=configs["history_window"],
   )
+  logging.info("Creating model for training completed.")
 
   logging.info("Training dataset size: %d", len(train_dataset))
   logging.info("Batches in each epoch: %d", len(train_loader))
@@ -165,7 +181,7 @@ def train(configs):
 
     logging.info("Model saved at %s", checkpoint_name)
   finally:
-    logging.info("Training is complete.")
+    logging.info("Training is terminated.")
     metrics_path = "%s.joblib" % os.path.join(
         root_dir, "train_metrics_%d_epochs" % len(metrics))
     joblib.dump(metrics, metrics_path)
@@ -183,6 +199,7 @@ def inference(configs):
   eval_dataset = MimicDataset(
       data_split=FLAGS.data_split,
       data_dir=configs["data_dir"],
+      block_size=configs["block_size"],
       target_label=configs["target_label"],
       history_window=configs["history_window"],
       prediction_window=configs["prediction_window"],
@@ -203,11 +220,14 @@ def inference(configs):
   model = MimicModel(
       model_type=configs["model_type"],
       input_size=configs["input_size"],
-      hidden_size=configs["output_size"],
+      use_attention=configs["use_attention"],
+      rnn_hidden_size=configs["rnn_hidden_size"],
       rnn_type=configs["rnn_type"],
-      num_layers=configs["rnn_layers"],
-      dropout=configs["rnn_dropout"],
-      bidirectional=configs["bidirectional"],
+      rnn_layers=configs["rnn_layers"],
+      rnn_dropout=configs["rnn_dropout"],
+      rnn_bidirectional=configs["rnn_bidirectional"],
+      lr_pooling=configs["lr_pooling"],
+      lr_history_window=configs["history_window"],
   )
 
   model_checkpoints = [
@@ -235,7 +255,7 @@ def inference(configs):
       for i, (inputs, labels) in enumerate(eval_loader):
         logits, endpoints = model(inputs)
 
-        if endpoints and "attention_score" in endpoints:
+        if "attention_score" in endpoints:
           attention_scores.append(endpoints["attention_score"].numpy())
 
         y_true.append(labels.numpy())
@@ -276,23 +296,28 @@ def save_and_load_flags():
     configs = {
         "model_type": FLAGS.model_type,
         "input_size": FLAGS.input_size,
-        "output_size": FLAGS.output_size,
+        "rnn_hidden_size": FLAGS.rnn_hidden_size,
+        "use_attention": FLAGS.use_attention,
         "rnn_type": FLAGS.rnn_type,
         "rnn_layers": FLAGS.rnn_layers,
         "rnn_dropout": FLAGS.rnn_dropout,
-        "bidirectional": FLAGS.bidirectional,
+        "rnn_bidirectional": FLAGS.rnn_bidirectional,
         "standardize": FLAGS.standardize,
+        "block_size": FLAGS.block_size,
         "history_window": FLAGS.history_window,
         "prediction_window": FLAGS.prediction_window,
         "target_label": FLAGS.target_label,
         "data_dir": FLAGS.data_dir,
+        "lr_pooling": FLAGS.lr_pooling,
     }
+
     with open(flag_saving_path, "w") as fp:
       configs = json.dump(configs, fp, indent=2)
 
-  assert os.path.exists(
-      flag_saving_path
-  ), "Training model configuration didn't find, please double check `checkpoint_dir` and `experiment_name`."
+  if not os.path.exists(flag_saving_path):
+    raise AssertionError(
+        "Training model configuration didn't find, please double check "
+        "`checkpoint_dir` and `experiment_name`.")
 
   with open(flag_saving_path, "r") as fp:
     configs = json.load(fp)
@@ -302,6 +327,10 @@ def save_and_load_flags():
     logging.info("%d: %s=%s", i, key, val)
 
   return configs
+
+
+def pipeline(configs):
+  return
 
 
 def main(unused_argv):
@@ -314,6 +343,9 @@ def main(unused_argv):
   elif FLAGS.phase == "inference":
     logging.info("Mode: Inference")
     inference(configs)
+  elif FLAGS.phase == "pipeline":
+    logging.info("Mode: Train/Eval pipeline")
+    pipeline(configs)
 
 
 if __name__ == "__main__":

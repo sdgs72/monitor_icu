@@ -21,6 +21,7 @@ class MimicDataset(torch.utils.data.Dataset):
       self,
       data_split,
       data_dir,
+      block_size,
       target_label,
       history_window,
       prediction_window,
@@ -35,6 +36,7 @@ class MimicDataset(torch.utils.data.Dataset):
     Args:
       data_split: `train`, `val` or `test`.
       data_dir: Path to the data npy files and label csv file.
+      block_size: Number of hours to be considered as one block.
       target_label: `death`, `discharge` or `sepsis`.
       history_window: Length of history events in blocks.
       prediction_window: Length of target event occurrence in future blocks.
@@ -45,13 +47,14 @@ class MimicDataset(torch.utils.data.Dataset):
       standardize: Whether to standardize inputs for zero mean and unit variance.
       standard_scaler_path: Path to precomputed (on `train`) standardizer.
     """
-    self.data_name = "%s_interval6_data.npy"
-    self.label_name = "split_label_table.csv"
+    self.data_name = "%s_interval1_data.npy"
+    self.label_name = "hadm_infos.csv"
 
     self.data_dir = data_dir
     self.data_split = data_split
+    self.block_size = block_size
     self.target_label = target_label
-    self.history_window = history_window  # Use 8 * 6 = 48h (2 days) history for model building
+    self.history_window = history_window
     self.prediction_window = prediction_window
     self.dataset_size = dataset_size
     self.pca_dim = pca_dim
@@ -63,10 +66,13 @@ class MimicDataset(torch.utils.data.Dataset):
       raise ValueError(
           "Invalid `data_split`: Only `train`, `val` or `test` is supported.")
 
-    self.data = np.load(
+    self.raw_data = np.load(
         os.path.join(self.data_dir, self.data_name % self.data_split)).item()
 
     self.labels, self.durations = self._load_labels()
+
+    self.data = self._aggregate_raw_data()
+
     self.resample()
 
     if self.pca_dim or self.standardize:
@@ -78,7 +84,7 @@ class MimicDataset(torch.utils.data.Dataset):
 
   def __getitem__(self, idx):
     hadm_id, (start_day, end_day), label = self.sample_list[idx]
-    data = self.data[hadm_id][start_day:end_day, :].todense().A
+    data = self.data[hadm_id][start_day:end_day, :]
 
     if self.pca_dim:
       data = self.decomposer.transform(data)
@@ -88,16 +94,45 @@ class MimicDataset(torch.utils.data.Dataset):
 
     return data.astype(np.float32), label
 
+  def _aggregate_raw_data(self):
+
+    def _convert(mat):
+      """Convert sparse matrix to np.ndarray, pad with zeros and reshape."""
+      mat = mat.toarray()
+      num_hours, voc_size = mat.shape
+      zeros = np.zeros((self.block_size - num_hours % self.block_size,
+                        voc_size))
+      padded = np.vstack((mat, zeros))
+
+      if padded.shape[0] % self.block_size:
+        raise AssertionError("Invalid shape in padded data matrix.")
+
+      return padded.reshape(-1, self.block_size, voc_size)
+
+    logging.info("Number of admissions: %d", len(self.raw_data))
+    logging.info("Preprocess dataset with block size of %d", self.block_size)
+    aggregated_data = {}
+    for hadm_id, mat in self.raw_data.items():
+      aggregated_data[hadm_id] = np.sum(_convert(mat), axis=1)
+      # logging.info("hadm_id: %s, shape: %s", hadm_id,
+      #              aggregated_data[hadm_id].shape)
+    logging.info("Preprocess completed.")
+
+    return aggregated_data
+
   def resample(self):
-    logging.info("Resample dataset.")
+    logging.info("Resample dataset...")
     self.sample_list = self._sample_data()
+    logging.info("Resample dataset completed!")
     return
 
   def _preprocessing(self):
     decomposer, standard_scaler = None, None
 
+    # aggregated_data = np.concatenate(list(self.data.values()), axis=0)
     aggregated_data = np.stack([np.sum(x, axis=0) for x in self.data.values()],
                                axis=0)
+    logging.info("Feature shape for PCA: %s", aggregated_data.shape)
 
     if self.data_split == "train":
       decomposer = PCA(n_components=self.pca_dim)
@@ -119,6 +154,9 @@ class MimicDataset(torch.utils.data.Dataset):
 
   def _generate_candidates(self):
     full_negatives, full_positives = [], []
+
+    logging.info("Number of instances in labels: %d",
+                 len(self.labels[self.target_label]))
     for hadm_id, label_time in self.labels[self.target_label].items():
       negatives, positives = [], []
       if label_time < 0:  # all negatives
@@ -133,6 +171,7 @@ class MimicDataset(torch.utils.data.Dataset):
             start_time + self.history_window + self.prediction_window)
         label = label_time in prediction_window
         [negatives, positives][label].append((hadm_id, history_window, label))
+
       full_negatives += negatives
       full_positives += positives
 
@@ -141,18 +180,6 @@ class MimicDataset(torch.utils.data.Dataset):
   def _sample_data(self):
     negatives, positives = self._generate_candidates()
 
-    logging.log_first_n(logging.INFO, "Positive candidates: %d", 1,
-                        len(positives))
-    logging.log_first_n(logging.INFO, "Negative candidates: %d", 1,
-                        len(negatives))
-
-    if self.dataset_size == 0:
-      self.dataset_size = len(positives) * 2
-      logging.info("Dataset use default size:")
-      logging.info("Use all %d positive samples", len(positives))
-      logging.info("Sample equal size of negative samples from %d candidates",
-                   len(negatives))
-
     if self.dataset_size == -1:
       logging.info("Using all possible candidates without sampling.")
       logging.warn(
@@ -160,28 +187,42 @@ class MimicDataset(torch.utils.data.Dataset):
       )
       return negatives + positives
 
-    sample_list = random.choices(negatives, k=self.dataset_size // 2)
-    sample_list += random.choices(
-        positives, k=self.dataset_size - self.dataset_size // 2)
+    elif self.dataset_size == 0:
+      self.dataset_size = len(positives) * 2
+      logging.info("Dataset use default size: %d", len(positives) * 2)
+      logging.info("  Use all %d positive samples", len(positives))
+      logging.info("  Randomly choose %d negative samples from %d candidates",
+                   len(positives), len(negatives))
 
-    return sample_list
+      return random.choices(negatives, k=len(positives)) + positives
+
+    else:
+      sample_list = random.choices(negatives, k=self.dataset_size // 2)
+      sample_list += random.choices(
+          positives, k=self.dataset_size - self.dataset_size // 2)
+
+      return sample_list
 
   def _load_labels(self):
+
+    def _hour_to_block(str_hour):
+      return int(str_hour) // self.block_size
+
     labels = {"death": {}, "discharge": {}, "sepsis": {}}
     durations = {}
 
     # csv header:
-    # HADM_ID,TotalBlocks,Discharge,Death,Sepsis,DataSplit
+    # hadmId,admissionDuration,dischargeTime,deathTime,sepsisTime,dataSplit
+
     with open(os.path.join(self.data_dir, self.label_name)) as fp:
       reader = csv.DictReader(fp)
       for row in reader:
-        hadmid = row["HADM_ID"]
-        if row["DataSplit"] != self.data_split:
+        hadm_id = row["hadmId"]
+        if row["dataSplit"] != self.data_split:
           continue
-        duration = int(row["TotalBlocks"])
-        durations[hadmid] = duration
-        labels["death"][hadmid] = int(row["Death"])
-        labels["discharge"][hadmid] = int(row["Discharge"])
-        labels["sepsis"][hadmid] = int(row["Sepsis"])
+        durations[hadm_id] = _hour_to_block(row["admissionDuration"])
+        labels["death"][hadm_id] = _hour_to_block(row["deathTime"])
+        labels["discharge"][hadm_id] = _hour_to_block(row["dischargeTime"])
+        labels["sepsis"][hadm_id] = _hour_to_block(row["sepsisTime"])
 
     return labels, durations

@@ -10,62 +10,84 @@ import torch
 
 class MimicModel(torch.nn.Module):
 
-  def __init__(self, model_type, input_size, hidden_size, rnn_type, num_layers,
-               dropout, bidirectional):
+  def __init__(
+      self,
+      model_type,
+      input_size,
+      use_attention,
+      rnn_hidden_size,
+      rnn_type,
+      rnn_layers,
+      rnn_dropout,
+      rnn_bidirectional,
+      lr_pooling="mean",
+      lr_history_window=None,
+  ):
     """Builds model.
 
     Args:
-      model_type: `lr`, `rnn`, `attentional_lr` or `attentional_rnn`.
+      model_type: `lr` or `rnn`.
       input_size: Dimension of input vector.
       hidden_size: Dimension of hidden embeddings.
       rnn_type: `LSTM` or `GRU`.
       num_layers: Number of layers for stacked LSTM.
       dropout: Float, dropout rate.
       bidirectional: True if using bidirectional LSTM otherwise False.
+      use_attention: True if using attention mechanism otherwise False.
+      lr_pooling: `concat`, `last`, `mean` or `max`.
     """
     super(MimicModel, self).__init__()
 
     self.model_type = model_type
     self.input_size = input_size
-    self.hidden_size = hidden_size
+    self.rnn_hidden_size = rnn_hidden_size
     self.rnn_type = rnn_type
-    self.num_layers = num_layers
-    self.dropout = dropout
-    self.bidirectional = bidirectional
+    self.rnn_layers = rnn_layers
+    self.rnn_dropout = rnn_dropout
+    self.rnn_bidirectional = rnn_bidirectional
+    self.use_attention = use_attention
+    self.lr_pooling = lr_pooling
+    self.lr_history_window = lr_history_window
 
-    if "lstm" == self.rnn_type:
+    if self.rnn_type == "lstm":
       module = torch.nn.LSTM
-    elif "gru" == self.rnn_type:
+    elif self.rnn_type == "gru":
       module = torch.nn.GRU
     else:
       raise ValueError("Only `LSTM` and `GRU` are supported `rnn_type`.")
 
-    if "rnn" in self.model_type:
+    num_directions = 2 if self.model_type == "rnn" and self.bidirectional else 1
+
+    if self.model_type == "rnn":
       self.rnn_module = module(
           input_size=self.input_size,
-          hidden_size=self.hidden_size,
+          hidden_size=self.rnn_hidden_size,
           batch_first=True,
-          num_layers=self.num_layers,
-          dropout=self.dropout,
-          bidirectional=self.bidirectional)
+          num_layers=self.rnn_layers,
+          dropout=self.rnn_dropout,
+          bidirectional=self.rnn_bidirectional)
 
       self.rnn_linear = torch.nn.Linear(
-          in_features=self.hidden_size * (self.bidirectional + 1),
-          out_features=1)
+          in_features=self.hidden_size * num_directions, out_features=1)
 
-      if "attentional" in self.model_type:
+      if self.use_attention:
         self.attention_layer = torch.nn.Linear(
-            in_features=self.hidden_size * (self.bidirectional + 1),
+            in_features=self.hidden_size * num_directions, out_features=1)
+
+    if self.model_type == "lr":
+      if self.use_attention:
+        self.attention_layer = torch.nn.Linear(
+            in_features=self.input_size, out_features=1)
+
+        self.lr_linear = torch.nn.Linear(
+            in_features=self.input_size, out_features=1)
+      elif self.lr_pooling == "concat":
+        self.lr_linear = torch.nn.Linear(
+            in_features=self.input_size * self.lr_history_window,
             out_features=1)
-
-    if "lr" in self.model_type:
-      self.lr_linear = torch.nn.Linear(
-          in_features=self.hidden_size, out_features=1)
-
-      if "attentional" in self.model_type:
-        self.attention_layer = torch.nn.Linear(
-            in_features=self.hidden_size, out_features=1)
-
+      else:
+        self.lr_linear = torch.nn.Linear(
+            in_features=self.input_size, out_features=1)
     return
 
   def forward(self, inputs):
@@ -76,19 +98,20 @@ class MimicModel(torch.nn.Module):
 
     Returns:
       logits: (batch,)
+      endpoints: Dictionary of auxiliary information.
     """
-    if "rnn" == self.model_type:
-      return self._rnn_forward(inputs)
-    elif "attentional_rnn" == self.model_type:
-      return self._attentional_rnn_forward(inputs)
-    elif "lr" == self.model_type:
-      return self._lr_forward(inputs)
-    elif "attentional_lr" == self.model_type:
-      return self._attentional_lr_forward(inputs)
+    if self.model_type == "rnn":
+      if self.use_attention:
+        return self._attentional_rnn_forward(inputs)
+      else:
+        return self._rnn_forward(inputs)
+    elif self.model_type == "lr":
+      if self.use_attention:
+        return self._attentional_lr_forward(inputs)
+      else:
+        return self._lr_baseline_forward(inputs)
     else:
-      raise ValueError(
-          "Only `lr`, `rnn`, `attentional_lr` or `attentional_rnn` "
-          "are supported `model_type`.")
+      raise ValueError("Only `lr` and `rnn` are supported `model_type`.")
 
   def _rnn_forward(self, inputs):
     outputs, aux_states = self.rnn_module(inputs)
@@ -119,17 +142,29 @@ class MimicModel(torch.nn.Module):
     logits = self.rnn_linear(output_embedding).squeeze(1)
 
     endpoints = {
-        "attention_score": attention_score,
+        "attention_scores": attention_score,
         "aux_states": aux_states,
     }
 
-    return logits, None
+    return logits, endpoints
 
-  def _lr_forward(self, inputs):
-    inputs = torch.mean(inputs, dim=1)
+  def _lr_baseline_forward(self, inputs):
+    if self.lr_pooling == "mean":
+      inputs = torch.mean(inputs, dim=1)
+    elif self.lr_pooling == "last":
+      inputs = inputs[:, -1, :]
+    elif self.lr_pooling == "concat":
+      batch_size = inputs.shape[0]
+      inputs = torch.reshape(inputs, [batch_size, -1])
+    elif self.lr_pooling == "max":
+      inputs, _ = torch.max(inputs, dim=1)
+    else:
+      raise ValueError(
+          "Only `mean`, `last`, `concat` and `max` are supported `lr_pooling`.")
+
     logits = self.lr_linear(inputs).squeeze(1)
 
-    return logits, None
+    return logits, {}
 
   def _attentional_lr_forward(self, inputs):
     attention = self.attention_layer(inputs)
