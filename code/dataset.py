@@ -30,6 +30,7 @@ class MimicDataset(torch.utils.data.Dataset):
       pca_decomposer_path,
       standardize,
       standard_scaler_path,
+      phase,
   ):
     """Initializes dataset.
 
@@ -46,6 +47,7 @@ class MimicDataset(torch.utils.data.Dataset):
       pca_decomposer_path: Path to precomputed (on `train`) pca decomposer.
       standardize: Whether to standardize inputs for zero mean and unit variance.
       standard_scaler_path: Path to precomputed (on `train`) standardizer.
+      phase: `training` or `inference`.
     """
     self.data_name = "%s_interval1_data.npy"
     self.label_name = "hadm_infos.csv"
@@ -61,6 +63,7 @@ class MimicDataset(torch.utils.data.Dataset):
     self.pca_decomposer_path = pca_decomposer_path
     self.standardize = standardize
     self.standard_scaler_path = standard_scaler_path
+    self.phase = phase
 
     if self.data_split not in ["train", "val", "test"]:
       raise ValueError(
@@ -134,7 +137,7 @@ class MimicDataset(torch.utils.data.Dataset):
                                axis=0)
     logging.info("Feature shape for PCA: %s", aggregated_data.shape)
 
-    if self.data_split == "train":
+    if self.phase == "training":
       decomposer = PCA(n_components=self.pca_dim)
       transformed_data = decomposer.fit_transform(aggregated_data)
 
@@ -143,12 +146,14 @@ class MimicDataset(torch.utils.data.Dataset):
 
       joblib.dump(decomposer, self.pca_decomposer_path)
       joblib.dump(standard_scaler, self.standard_scaler_path)
-    else:
+    elif self.phase == "inference":
       assert self.pca_decomposer_path is not None, "Please specify `pca_decomposer_path`."
       assert self.standard_scaler_path is not None, "Please specify `standard_scaler_path`."
 
       decomposer = joblib.load(self.pca_decomposer_path)
       standard_scaler = joblib.load(self.standard_scaler_path)
+    else:
+      raise ValueError("Only `training` and `inference` are supported `phase`.")
 
     return decomposer, standard_scaler
 

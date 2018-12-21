@@ -14,6 +14,7 @@ import sklearn
 from sklearn.externals import joblib
 import time
 import torch
+from tensorboardX import SummaryWriter
 
 from model_builder import MimicModel
 from dataset import MimicDataset
@@ -34,7 +35,9 @@ flags.DEFINE_boolean("rnn_bidirectional", False,
                      "Whether to use bidirectional RNN model.")
 flags.DEFINE_integer("num_epochs", 10, "Number of epochs for training.")
 flags.DEFINE_float("learning_rate", 1e-2, "Learning rate for model training.")
-flags.DEFINE_enum("data_split", "train", ["train", "val", "test"],
+flags.DEFINE_enum("train_data_split", "train", ["train", "val", "test"],
+                  "Specifies the `train`, `val` or `test` data being used.")
+flags.DEFINE_enum("eval_data_split", "train", ["train", "val", "test"],
                   "Specifies the `train`, `val` or `test` data being used.")
 flags.DEFINE_string("data_dir", "../data/", "Directory path to data.")
 flags.DEFINE_enum("target_label", "death", ["discharge", "death", "sepsis"],
@@ -45,7 +48,10 @@ flags.DEFINE_integer("prediction_window", 2,
                      "Number of blocks in future for prediction.")
 flags.DEFINE_integer("block_size", 6, "Number of hours in a single block.")
 flags.DEFINE_integer(
-    "dataset_size", 0,
+    "train_dataset_size", 0,
+    "Number of instances in the each epoch. If 0 use auto-balancing mode.")
+flags.DEFINE_integer(
+    "eval_dataset_size", 0,
     "Number of instances in the each epoch. If 0 use auto-balancing mode.")
 flags.DEFINE_boolean("standardize", True, "Whether to standardize input data.")
 flags.DEFINE_string("checkpoint_dir", "./",
@@ -77,17 +83,18 @@ def train(configs):
 
   logging.info("Creating dataset...")
   train_dataset = MimicDataset(
-      data_split=FLAGS.data_split,
+      data_split=FLAGS.train_data_split,
       data_dir=configs["data_dir"],
       block_size=configs["block_size"],
       target_label=configs["target_label"],
       history_window=configs["history_window"],
       prediction_window=configs["prediction_window"],
-      dataset_size=FLAGS.dataset_size,
+      dataset_size=FLAGS.train_dataset_size,
       pca_dim=configs["input_size"],
       pca_decomposer_path=os.path.join(root_dir, default_decomposer_name),
       standardize=configs["standardize"],
       standard_scaler_path=os.path.join(root_dir, default_standard_scaler_name),
+      phase="training",
   )
   logging.info("Creating dataset completed!")
 
@@ -133,6 +140,7 @@ def train(configs):
       optimizer, step_size=FLAGS.num_epochs // 5, gamma=0.3)
 
   metrics = {}
+  summary_writer = SummaryWriter(log_dir=root_dir)
 
   logging.info("Initializatoin complete. Start training.")
   try:
@@ -150,6 +158,8 @@ def train(configs):
         with torch.set_grad_enabled(True):
           logits, _ = model(inputs)
           loss = criterion(input=logits, target=labels.float())
+          summary_writer.add_scalar("training/loss", loss.item(),
+                                    epoch * len(train_loader) + step)
           loss.backward()
           optimizer.step()
 
@@ -166,7 +176,7 @@ def train(configs):
           start_time = time.time()
 
       utilities.update_metrics(metrics, "epoch%d" % (epoch + 1), y_true,
-                               y_score)
+                               y_score, phase, summary_writer, epoch + 1)
       logging.info("Saving model checkpoint...")
       checkpoint_name = os.path.join(root_dir,
                                      "checkpoint_epoch%03d.model" % (epoch + 1))
@@ -197,17 +207,18 @@ def inference(configs):
     logging.info("%d: %s", i, x)
 
   eval_dataset = MimicDataset(
-      data_split=FLAGS.data_split,
+      data_split=FLAGS.eval_data_split,
       data_dir=configs["data_dir"],
       block_size=configs["block_size"],
       target_label=configs["target_label"],
       history_window=configs["history_window"],
       prediction_window=configs["prediction_window"],
-      dataset_size=FLAGS.dataset_size,
+      dataset_size=FLAGS.eval_dataset_size,
       pca_dim=configs["input_size"],
       pca_decomposer_path=os.path.join(root_dir, default_decomposer_name),
       standardize=configs["standardize"],
       standard_scaler_path=os.path.join(root_dir, default_standard_scaler_name),
+      phase="inference",
   )
 
   eval_loader = torch.utils.data.DataLoader(
@@ -250,13 +261,13 @@ def inference(configs):
     logging.info("Initializatoin complete. Start inference.")
 
     y_true, y_score = [], []
-    attention_scores = []
+    # attention_scores = []
     with torch.set_grad_enabled(False):
       for i, (inputs, labels) in enumerate(eval_loader):
         logits, endpoints = model(inputs)
 
-        if "attention_score" in endpoints:
-          attention_scores.append(endpoints["attention_score"].numpy())
+        # if "attention_score" in endpoints:
+        #   attention_scores.append(endpoints["attention_score"].numpy())
 
         y_true.append(labels.numpy())
         y_score.append(logits.numpy())
@@ -268,12 +279,12 @@ def inference(configs):
 
   logging.info("Evaluation on %d models complete.", len(model_checkpoints))
   metrics_path = "%s.joblib" % os.path.join(
-      root_dir, "eval_metrics_%s" % FLAGS.data_split)
+      root_dir, "eval_metrics_%s" % FLAGS.eval_data_split)
   joblib.dump(metrics, metrics_path)
 
-  attention_path = "%s.joblib" % os.path.join(
-      root_dir, "attention_scores_%s" % FLAGS.data_split)
-  joblib.dump([attention_scores, y_true, y_score], attention_path)
+  # attention_path = "%s.joblib" % os.path.join(
+  #     root_dir, "attention_scores_%s" % FLAGS.eval_data_split)
+  # joblib.dump([attention_scores, y_true, y_score], attention_path)
 
   logging.info("Metrics saved at %s.", metrics_path)
 
@@ -285,7 +296,7 @@ def save_and_load_flags():
   flag_saving_path = os.path.join(root_dir, "configs.json")
 
   # Save model configurations
-  if FLAGS.phase == "train":
+  if FLAGS.phase == "train" or FLAGS.phase == "pipeline":
 
     if os.path.isdir(root_dir):
       raise ValueError(
@@ -330,6 +341,173 @@ def save_and_load_flags():
 
 
 def pipeline(configs):
+  root_dir = os.path.join(FLAGS.checkpoint_dir, FLAGS.experiment_name)
+
+  with open(os.path.join(root_dir, "running_configs.cfg"), "w") as fp:
+    fp.write("python ")
+    for i, x in enumerate(sys.argv):
+      logging.info("%d: %s", i, x)
+      fp.write("%s \\\n" % x)
+
+  train_dataset = MimicDataset(
+      data_split=FLAGS.train_data_split,
+      data_dir=configs["data_dir"],
+      block_size=configs["block_size"],
+      target_label=configs["target_label"],
+      history_window=configs["history_window"],
+      prediction_window=configs["prediction_window"],
+      dataset_size=FLAGS.train_dataset_size,
+      pca_dim=configs["input_size"],
+      pca_decomposer_path=os.path.join(root_dir, default_decomposer_name),
+      standardize=configs["standardize"],
+      standard_scaler_path=os.path.join(root_dir, default_standard_scaler_name),
+      phase="training",
+  )
+  train_loader = torch.utils.data.DataLoader(
+      dataset=train_dataset,
+      batch_size=FLAGS.batch_size,
+      shuffle=True,
+      drop_last=False,
+  )
+
+  eval_dataset = MimicDataset(
+      data_split=FLAGS.eval_data_split,
+      data_dir=configs["data_dir"],
+      block_size=configs["block_size"],
+      target_label=configs["target_label"],
+      history_window=configs["history_window"],
+      prediction_window=configs["prediction_window"],
+      dataset_size=FLAGS.eval_dataset_size,
+      pca_dim=configs["input_size"],
+      pca_decomposer_path=os.path.join(root_dir, default_decomposer_name),
+      standardize=configs["standardize"],
+      standard_scaler_path=os.path.join(root_dir, default_standard_scaler_name),
+      phase="inference",
+  )
+  eval_loader = torch.utils.data.DataLoader(
+      dataset=eval_dataset,
+      batch_size=FLAGS.batch_size,
+      shuffle=True,
+      drop_last=False,
+  )
+  eval_dataset.resample()
+
+  model = MimicModel(
+      model_type=configs["model_type"],
+      input_size=configs["input_size"],
+      use_attention=configs["use_attention"],
+      rnn_hidden_size=configs["rnn_hidden_size"],
+      rnn_type=configs["rnn_type"],
+      rnn_layers=configs["rnn_layers"],
+      rnn_dropout=configs["rnn_dropout"],
+      rnn_bidirectional=configs["rnn_bidirectional"],
+      lr_pooling=configs["lr_pooling"],
+      lr_history_window=configs["history_window"],
+  )
+
+  logging.info("Training dataset size: %d", len(train_dataset))
+  logging.info("Batches in each epoch: %d", len(train_loader))
+  logging.info("Evaluation on `%s`", FLAGS.eval_data_split)
+  logging.info("Evaluation dataset size: %d", len(eval_dataset))
+  logging.info("Batches in each epoch: %d", len(eval_loader))
+
+  criterion = torch.nn.BCEWithLogitsLoss()
+
+  trainable_params = [x for x in model.named_parameters() if x[1].requires_grad]
+
+  logging.info("Model parameters:")
+  for name, param in trainable_params:
+    logging.info("%s: %s", name, param.size())
+
+  optimizer = torch.optim.RMSprop(model.parameters(), lr=FLAGS.learning_rate)
+  scheduler = torch.optim.lr_scheduler.StepLR(
+      optimizer, step_size=FLAGS.num_epochs // 5, gamma=0.3)
+
+  train_metrics = {}
+  eval_metrics = {}
+  summary_writer = SummaryWriter(log_dir=root_dir)
+
+  try:
+    for epoch in range(FLAGS.num_epochs):
+      logging.info("Start training.")
+      phase = "training"
+      model.train()
+
+      scheduler.step()
+      # Resample training dataset.
+      train_dataset.resample()
+      y_true, y_score = [], []
+
+      start_time = time.time()
+      for step, (inputs, labels) in enumerate(train_loader):
+
+        optimizer.zero_grad()
+
+        with torch.set_grad_enabled(True):
+          logits, _ = model(inputs)
+          loss = criterion(input=logits, target=labels.float())
+          summary_writer.add_scalar("%s/loss" % phase, loss.item(),
+                                    epoch * len(train_loader) + step)
+          loss.backward()
+          optimizer.step()
+
+        y_true.append(labels.detach().numpy())
+        y_score.append(logits.detach().numpy())
+
+        if (step + 1) % 10 == 0:
+          end_time = time.time()
+          logging.info(
+              'Epoch [{}/{}], Step [{}/{}], Loss: {:.6f}, Speed: {:.4f} ms'.
+              format(epoch + 1, FLAGS.num_epochs, step + 1, len(train_loader),
+                     loss.item(),
+                     (end_time - start_time) * 100 / logits.shape[0]))
+          start_time = time.time()
+
+      utilities.update_metrics(train_metrics, "epoch%d" % (epoch + 1), y_true,
+                               y_score, phase, summary_writer, epoch + 1)
+
+      checkpoint_name = os.path.join(root_dir,
+                                     "checkpoint_epoch%03d.model" % (epoch + 1))
+      torch.save(model.state_dict(), checkpoint_name)
+
+      phase = "evaluation"
+      model.eval()
+      logging.info("Start inference.")
+
+      y_true, y_score = [], []
+      with torch.set_grad_enabled(False):
+        for i, (inputs, labels) in enumerate(eval_loader):
+          logits, endpoints = model(inputs)
+
+          y_true.append(labels.numpy())
+          y_score.append(logits.numpy())
+
+          if (i + 1) % 10 == 0:
+            logging.info("Progress: %d / %d", i + 1, len(eval_loader))
+
+        utilities.update_metrics(eval_metrics, checkpoint_name, y_true, y_score,
+                                 phase, summary_writer, epoch + 1)
+
+  except KeyboardInterrupt:
+    logging.info("Interruppted. Stop training.")
+
+    logging.info("Saving model checkpoint...")
+    checkpoint_name = os.path.join(
+        root_dir, "checkpoint_epoch%03d_step%03d.model" % (epoch + 1, step + 1))
+    torch.save(model.state_dict(), checkpoint_name)
+    logging.info("Model saved at %s", checkpoint_name)
+
+  finally:
+    logging.info("Saving metrics...")
+    metrics_path = "%s.joblib" % os.path.join(
+        root_dir, "train_metrics_%d_epochs" % len(train_metrics))
+    joblib.dump(train_metrics, metrics_path)
+
+    metrics_path = "%s.joblib" % os.path.join(
+        root_dir, "eval_metrics_%s_%d_epochs" %
+        (FLAGS.eval_data_split, len(eval_metrics)))
+    joblib.dump(eval_metrics, metrics_path)
+    logging.info("Metrics saved.")
   return
 
 
