@@ -67,6 +67,9 @@ flags.DEFINE_boolean("use_attention", False,
                      "Whether to use attention mechanism or not.")
 flags.DEFINE_enum("lr_pooling", "mean", ["mean", "max", "last", "concat"],
                   "Specifies pooling strategies for logistic regression.")
+# flags.DEFINE_boolean(
+#     "train_embedding", False,
+#     "Whether to train medical events embedding together with the prediction.")
 
 default_decomposer_name = "pca_decomposer.joblib"
 default_standard_scaler_name = "standard_scaler.joblib"
@@ -90,6 +93,7 @@ def train(configs):
       history_window=configs["history_window"],
       prediction_window=configs["prediction_window"],
       dataset_size=FLAGS.train_dataset_size,
+      # pca_dim=None if configs["train_embedding"] else configs["input_size"],
       pca_dim=configs["input_size"],
       pca_decomposer_path=os.path.join(root_dir, default_decomposer_name),
       standardize=configs["standardize"],
@@ -153,6 +157,8 @@ def train(configs):
       start_time = time.time()
       for step, (inputs, labels) in enumerate(train_loader):
 
+        logging.info("Data shape: %s", inputs.shape)
+
         optimizer.zero_grad()
 
         with torch.set_grad_enabled(True):
@@ -214,6 +220,7 @@ def inference(configs):
       history_window=configs["history_window"],
       prediction_window=configs["prediction_window"],
       dataset_size=FLAGS.eval_dataset_size,
+      # pca_dim=None if configs["train_embedding"] else configs["input_size"],
       pca_dim=configs["input_size"],
       pca_decomposer_path=os.path.join(root_dir, default_decomposer_name),
       standardize=configs["standardize"],
@@ -291,55 +298,6 @@ def inference(configs):
   return
 
 
-def save_and_load_flags():
-  root_dir = os.path.join(FLAGS.checkpoint_dir, FLAGS.experiment_name)
-  flag_saving_path = os.path.join(root_dir, "configs.json")
-
-  # Save model configurations
-  if FLAGS.phase == "train" or FLAGS.phase == "pipeline":
-
-    if os.path.isdir(root_dir):
-      raise ValueError(
-          "Target directory already exists. Please change `experiment_name`.")
-
-    os.makedirs(root_dir)
-
-    configs = {
-        "model_type": FLAGS.model_type,
-        "input_size": FLAGS.input_size,
-        "rnn_hidden_size": FLAGS.rnn_hidden_size,
-        "use_attention": FLAGS.use_attention,
-        "rnn_type": FLAGS.rnn_type,
-        "rnn_layers": FLAGS.rnn_layers,
-        "rnn_dropout": FLAGS.rnn_dropout,
-        "rnn_bidirectional": FLAGS.rnn_bidirectional,
-        "standardize": FLAGS.standardize,
-        "block_size": FLAGS.block_size,
-        "history_window": FLAGS.history_window,
-        "prediction_window": FLAGS.prediction_window,
-        "target_label": FLAGS.target_label,
-        "data_dir": FLAGS.data_dir,
-        "lr_pooling": FLAGS.lr_pooling,
-    }
-
-    with open(flag_saving_path, "w") as fp:
-      configs = json.dump(configs, fp, indent=2)
-
-  if not os.path.exists(flag_saving_path):
-    raise AssertionError(
-        "Training model configuration didn't find, please double check "
-        "`checkpoint_dir` and `experiment_name`.")
-
-  with open(flag_saving_path, "r") as fp:
-    configs = json.load(fp)
-
-  logging.info("Saved model parameters:")
-  for i, (key, val) in enumerate(configs.items()):
-    logging.info("%d: %s=%s", i, key, val)
-
-  return configs
-
-
 def pipeline(configs):
   root_dir = os.path.join(FLAGS.checkpoint_dir, FLAGS.experiment_name)
 
@@ -357,6 +315,7 @@ def pipeline(configs):
       history_window=configs["history_window"],
       prediction_window=configs["prediction_window"],
       dataset_size=FLAGS.train_dataset_size,
+      # pca_dim=None if configs["train_embedding"] else configs["input_size"],
       pca_dim=configs["input_size"],
       pca_decomposer_path=os.path.join(root_dir, default_decomposer_name),
       standardize=configs["standardize"],
@@ -378,6 +337,7 @@ def pipeline(configs):
       history_window=configs["history_window"],
       prediction_window=configs["prediction_window"],
       dataset_size=FLAGS.eval_dataset_size,
+      # pca_dim=None if configs["train_embedding"] else configs["input_size"],
       pca_dim=configs["input_size"],
       pca_decomposer_path=os.path.join(root_dir, default_decomposer_name),
       standardize=configs["standardize"],
@@ -509,6 +469,56 @@ def pipeline(configs):
     joblib.dump(eval_metrics, metrics_path)
     logging.info("Metrics saved.")
   return
+
+
+def save_and_load_flags():
+  root_dir = os.path.join(FLAGS.checkpoint_dir, FLAGS.experiment_name)
+  flag_saving_path = os.path.join(root_dir, "configs.json")
+
+  # Save model configurations
+  if FLAGS.phase == "train" or FLAGS.phase == "pipeline":
+
+    if os.path.isdir(root_dir):
+      raise ValueError(
+          "Target directory already exists. Please change `experiment_name`.")
+
+    os.makedirs(root_dir)
+
+    configs = {
+        "model_type": FLAGS.model_type,
+        "input_size": FLAGS.input_size,
+        "rnn_hidden_size": FLAGS.rnn_hidden_size,
+        "use_attention": FLAGS.use_attention,
+        "rnn_type": FLAGS.rnn_type,
+        "rnn_layers": FLAGS.rnn_layers,
+        "rnn_dropout": FLAGS.rnn_dropout,
+        "rnn_bidirectional": FLAGS.rnn_bidirectional,
+        "standardize": FLAGS.standardize,
+        "block_size": FLAGS.block_size,
+        "history_window": FLAGS.history_window,
+        "prediction_window": FLAGS.prediction_window,
+        "target_label": FLAGS.target_label,
+        "data_dir": FLAGS.data_dir,
+        "lr_pooling": FLAGS.lr_pooling,
+        # "train_embedding": FLAGS.train_embedding,
+    }
+
+    with open(flag_saving_path, "w") as fp:
+      configs = json.dump(configs, fp, indent=2)
+
+  if not os.path.exists(flag_saving_path):
+    raise AssertionError(
+        "Training model configuration didn't find, please double check "
+        "`checkpoint_dir` and `experiment_name`.")
+
+  with open(flag_saving_path, "r") as fp:
+    configs = json.load(fp)
+
+  logging.info("Saved model parameters:")
+  for i, (key, val) in enumerate(configs.items()):
+    logging.info("%d: %s=%s", i, key, val)
+
+  return configs
 
 
 def main(unused_argv):

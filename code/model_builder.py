@@ -20,6 +20,8 @@ class MimicModel(torch.nn.Module):
       rnn_layers,
       rnn_dropout,
       rnn_bidirectional,
+      # train_embedding,
+      # vocabulary_path,
       lr_pooling="mean",
       lr_history_window=None,
   ):
@@ -48,6 +50,7 @@ class MimicModel(torch.nn.Module):
     self.use_attention = use_attention
     self.lr_pooling = lr_pooling
     self.lr_history_window = lr_history_window
+    # self.train_embedding = train_embedding
 
     if self.rnn_type == "lstm":
       module = torch.nn.LSTM
@@ -57,6 +60,13 @@ class MimicModel(torch.nn.Module):
       raise ValueError("Only `LSTM` and `GRU` are supported `rnn_type`.")
 
     num_directions = 2 if self.model_type == "rnn" and self.bidirectional else 1
+
+    # if self.train_embedding:
+    #   if not vocabulary_path or not os.path.exists(vocabulary_path):
+    #     raise AssertionError("`vocabulary_path` is not defined or not found.")
+
+    #   self.vocabulary = self.load_vocabulary(vocabulary_path)
+    #   self.embedding = torch.nn.Embedding(len(self.vocabulary), self.input_size)
 
     if self.model_type == "rnn":
       self.rnn_module = module(
