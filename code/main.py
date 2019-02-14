@@ -67,6 +67,9 @@ flags.DEFINE_boolean("use_attention", False,
                      "Whether to use attention mechanism or not.")
 flags.DEFINE_enum("lr_pooling", "mean", ["mean", "max", "last", "concat"],
                   "Specifies pooling strategies for logistic regression.")
+flags.DEFINE_integer(
+    "save_per_epochs", 10,
+    "Save intermediate checkpoints every few training epochs.")
 # flags.DEFINE_boolean(
 #     "train_embedding", False,
 #     "Whether to train medical events embedding together with the prediction.")
@@ -181,12 +184,14 @@ def train(configs):
                      (end_time - start_time) * 100 / logits.shape[0]))
           start_time = time.time()
 
-      utilities.update_metrics(metrics, "epoch%d" % (epoch + 1), y_true,
-                               y_score, phase, summary_writer, epoch + 1)
-      logging.info("Saving model checkpoint...")
-      checkpoint_name = os.path.join(root_dir,
-                                     "checkpoint_epoch%03d.model" % (epoch + 1))
-      torch.save(model.state_dict(), checkpoint_name)
+      utilities.update_metrics(y_true, y_score, phase, summary_writer,
+                               epoch + 1)
+
+      if (epoch + 1) % configs["save_per_epochs"] == 0:
+        logging.info("Saving model checkpoint...")
+        checkpoint_name = os.path.join(
+            root_dir, "checkpoint_epoch%03d.model" % (epoch + 1))
+        torch.save(model.state_dict(), checkpoint_name)
 
   except KeyboardInterrupt:
     logging.info("Interruppted. Stop training.")
@@ -198,16 +203,17 @@ def train(configs):
     logging.info("Model saved at %s", checkpoint_name)
   finally:
     logging.info("Training is terminated.")
-    metrics_path = "%s.joblib" % os.path.join(
-        root_dir, "train_metrics_%d_epochs" % len(metrics))
-    joblib.dump(metrics, metrics_path)
 
-    logging.info("Metrics saved at %s.", metrics_path)
+    # metrics_path = "%s.joblib" % os.path.join(
+    #     root_dir, "train_metrics_%d_epochs" % len(metrics))
+    # joblib.dump(metrics, metrics_path)
+    # logging.info("Metrics saved at %s.", metrics_path)
   return
 
 
 def inference(configs):
   root_dir = os.path.join(FLAGS.checkpoint_dir, FLAGS.experiment_name)
+  phase = "evaluation"
 
   for i, x in enumerate(sys.argv):
     logging.info("%d: %s", i, x)
@@ -282,18 +288,18 @@ def inference(configs):
         if (i + 1) % 10 == 0:
           logging.info("Progress: %d / %d", i + 1, len(eval_loader))
 
-      utilities.update_metrics(metrics, checkpoint_name, y_true, y_score)
+      utilities.update_metrics(y_true, y_score, phase, summary_writer,
+                               epoch + 1)
 
   logging.info("Evaluation on %d models complete.", len(model_checkpoints))
-  metrics_path = "%s.joblib" % os.path.join(
-      root_dir, "eval_metrics_%s" % FLAGS.eval_data_split)
-  joblib.dump(metrics, metrics_path)
+  # metrics_path = "%s.joblib" % os.path.join(
+  #     root_dir, "eval_metrics_%s" % FLAGS.eval_data_split)
+  # joblib.dump(metrics, metrics_path)
+  # logging.info("Metrics saved at %s.", metrics_path)
 
   # attention_path = "%s.joblib" % os.path.join(
   #     root_dir, "attention_scores_%s" % FLAGS.eval_data_split)
   # joblib.dump([attention_scores, y_true, y_score], attention_path)
-
-  logging.info("Metrics saved at %s.", metrics_path)
 
   return
 
@@ -383,8 +389,8 @@ def pipeline(configs):
   scheduler = torch.optim.lr_scheduler.StepLR(
       optimizer, step_size=FLAGS.num_epochs // 5, gamma=0.3)
 
-  train_metrics = {}
-  eval_metrics = {}
+  # train_metrics = {}
+  # eval_metrics = {}
   summary_writer = SummaryWriter(log_dir=root_dir)
 
   try:
@@ -423,12 +429,15 @@ def pipeline(configs):
                      (end_time - start_time) * 100 / logits.shape[0]))
           start_time = time.time()
 
-      utilities.update_metrics(train_metrics, "epoch%d" % (epoch + 1), y_true,
-                               y_score, phase, summary_writer, epoch + 1)
+      utilities.update_metrics(y_true, y_score, phase, summary_writer,
+                               epoch + 1)
 
       checkpoint_name = os.path.join(root_dir,
                                      "checkpoint_epoch%03d.model" % (epoch + 1))
-      torch.save(model.state_dict(), checkpoint_name)
+
+      if (epoch + 1) % configs["save_per_epochs"] == 0:
+        logging.info("Saving model checkpoint...")
+        torch.save(model.state_dict(), checkpoint_name)
 
       phase = "evaluation"
       model.eval()
@@ -445,8 +454,8 @@ def pipeline(configs):
           if (i + 1) % 10 == 0:
             logging.info("Progress: %d / %d", i + 1, len(eval_loader))
 
-        utilities.update_metrics(eval_metrics, checkpoint_name, y_true, y_score,
-                                 phase, summary_writer, epoch + 1)
+        utilities.update_metrics(y_true, y_score, phase, summary_writer,
+                                 epoch + 1)
 
   except KeyboardInterrupt:
     logging.info("Interruppted. Stop training.")
@@ -458,16 +467,16 @@ def pipeline(configs):
     logging.info("Model saved at %s", checkpoint_name)
 
   finally:
-    logging.info("Saving metrics...")
-    metrics_path = "%s.joblib" % os.path.join(
-        root_dir, "train_metrics_%d_epochs" % len(train_metrics))
-    joblib.dump(train_metrics, metrics_path)
+    logging.info("Train/Eval completed.")
+    #   logging.info("Saving metrics...")
+    #   metrics_path = "%s.joblib" % os.path.join(
+    #       root_dir, "train_metrics_%d_epochs" % len(train_metrics))
+    #   joblib.dump(train_metrics, metrics_path)
 
-    metrics_path = "%s.joblib" % os.path.join(
-        root_dir, "eval_metrics_%s_%d_epochs" %
-        (FLAGS.eval_data_split, len(eval_metrics)))
-    joblib.dump(eval_metrics, metrics_path)
-    logging.info("Metrics saved.")
+    #   metrics_path = "%s.joblib" % os.path.join(
+    #       root_dir, "eval_metrics_%s_%d_epochs" %
+    #       (FLAGS.eval_data_split, len(eval_metrics)))
+    #   joblib.dump(eval_metrics, metrics_path)
   return
 
 
@@ -500,6 +509,7 @@ def save_and_load_flags():
         "target_label": FLAGS.target_label,
         "data_dir": FLAGS.data_dir,
         "lr_pooling": FLAGS.lr_pooling,
+        "save_per_epochs": FLAGS.save_per_epochs,
         # "train_embedding": FLAGS.train_embedding,
     }
 
