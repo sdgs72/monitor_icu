@@ -1,0 +1,938 @@
+I0215 15:42:17.799743 4453160384 main.py:527] Saved model parameters:
+I0215 15:42:17.800246 4453160384 main.py:529] 0: model_type=rnn
+I0215 15:42:17.800312 4453160384 main.py:529] 1: input_size=256
+I0215 15:42:17.800367 4453160384 main.py:529] 2: rnn_hidden_size=256
+I0215 15:42:17.800415 4453160384 main.py:529] 3: use_attention=True
+I0215 15:42:17.800463 4453160384 main.py:529] 4: rnn_type=lstm
+I0215 15:42:17.800508 4453160384 main.py:529] 5: rnn_layers=1
+I0215 15:42:17.800554 4453160384 main.py:529] 6: rnn_dropout=0.0
+I0215 15:42:17.800599 4453160384 main.py:529] 7: rnn_bidirectional=True
+I0215 15:42:17.800644 4453160384 main.py:529] 8: standardize=True
+I0215 15:42:17.800688 4453160384 main.py:529] 9: block_size=6
+I0215 15:42:17.800732 4453160384 main.py:529] 10: history_window=56
+I0215 15:42:17.800776 4453160384 main.py:529] 11: prediction_window=4
+I0215 15:42:17.800822 4453160384 main.py:529] 12: target_label=death
+I0215 15:42:17.800866 4453160384 main.py:529] 13: data_dir=./data
+I0215 15:42:17.800909 4453160384 main.py:529] 14: lr_pooling=mean
+I0215 15:42:17.800954 4453160384 main.py:529] 15: save_per_epochs=10
+I0215 15:42:17.801006 4453160384 main.py:545] Mode: Train/Eval pipeline
+I0215 15:42:17.801144 4453160384 main.py:313] 0: code/main.py
+I0215 15:42:17.801199 4453160384 main.py:313] 1: --phase=pipeline
+I0215 15:42:17.801245 4453160384 main.py:313] 2: --model_type=rnn
+I0215 15:42:17.801291 4453160384 main.py:313] 3: --rnn_type=lstm
+I0215 15:42:17.801338 4453160384 main.py:313] 4: --rnn_bidirectional
+I0215 15:42:17.801383 4453160384 main.py:313] 5: --use_attention
+I0215 15:42:17.801426 4453160384 main.py:313] 6: --batch_size=128
+I0215 15:42:17.801470 4453160384 main.py:313] 7: --input_size=256
+I0215 15:42:17.801516 4453160384 main.py:313] 8: --rnn_hidden_size=256
+I0215 15:42:17.801560 4453160384 main.py:313] 9: --num_epochs=20
+I0215 15:42:17.801605 4453160384 main.py:313] 10: --learning_rate=1e-3
+I0215 15:42:17.801655 4453160384 main.py:313] 11: --train_data_split=train
+I0215 15:42:17.801701 4453160384 main.py:313] 12: --eval_data_split=val
+I0215 15:42:17.801745 4453160384 main.py:313] 13: --data_dir=./data
+I0215 15:42:17.801789 4453160384 main.py:313] 14: --target_label=death
+I0215 15:42:17.801835 4453160384 main.py:313] 15: --block_size=6
+I0215 15:42:17.801880 4453160384 main.py:313] 16: --history_window=56
+I0215 15:42:17.801925 4453160384 main.py:313] 17: --prediction_window=4
+I0215 15:42:17.801970 4453160384 main.py:313] 18: --train_dataset_size=0
+I0215 15:42:17.802015 4453160384 main.py:313] 19: --eval_dataset_size=0
+I0215 15:42:17.802060 4453160384 main.py:313] 20: --rnn_layers=1
+I0215 15:42:17.802103 4453160384 main.py:313] 21: --rnn_dropout=0
+I0215 15:42:17.802148 4453160384 main.py:313] 22: --standardize
+I0215 15:42:17.802191 4453160384 main.py:313] 23: --checkpoint_dir=./experiments
+I0215 15:42:17.802235 4453160384 main.py:313] 24: --experiment_name=exp_2_d
+I0215 15:42:20.390299 4453160384 dataset.py:116] Number of admissions: 13344
+I0215 15:42:20.390468 4453160384 dataset.py:117] Preprocess dataset with block size of 6
+I0215 15:43:17.186166 4453160384 dataset.py:123] Preprocess completed.
+I0215 15:43:17.186357 4453160384 dataset.py:128] Resample dataset...
+I0215 15:43:17.186460 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:43:17.322947 4453160384 dataset.py:208] Dataset use default size: 2374
+I0215 15:43:17.323320 4453160384 dataset.py:209]   Use all 1187 positive samples
+I0215 15:43:17.323537 4453160384 dataset.py:211]   Randomly choose 1187 negative samples from 129561 candidates
+I0215 15:43:17.329142 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:43:31.772114 4453160384 dataset.py:139] Feature shape for PCA: (13344, 4010)
+I0215 15:43:38.052016 4453160384 dataset.py:116] Number of admissions: 4329
+I0215 15:43:38.052153 4453160384 dataset.py:117] Preprocess dataset with block size of 6
+I0215 15:43:58.842782 4453160384 dataset.py:123] Preprocess completed.
+I0215 15:43:58.842952 4453160384 dataset.py:128] Resample dataset...
+I0215 15:43:58.843045 4453160384 dataset.py:175] Number of instances in labels: 4329
+I0215 15:43:58.880959 4453160384 dataset.py:208] Dataset use default size: 832
+I0215 15:43:58.881120 4453160384 dataset.py:209]   Use all 416 positive samples
+I0215 15:43:58.881233 4453160384 dataset.py:211]   Randomly choose 416 negative samples from 42169 candidates
+I0215 15:43:58.883769 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:44:01.223821 4453160384 dataset.py:139] Feature shape for PCA: (4329, 4010)
+I0215 15:44:01.284126 4453160384 dataset.py:128] Resample dataset...
+I0215 15:44:01.284293 4453160384 dataset.py:175] Number of instances in labels: 4329
+I0215 15:44:01.327146 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:44:01.369156 4453160384 main.py:374] Training dataset size: 2374
+I0215 15:44:01.369349 4453160384 main.py:375] Batches in each epoch: 19
+I0215 15:44:01.369465 4453160384 main.py:376] Evaluation on `val`
+I0215 15:44:01.369739 4453160384 main.py:377] Evaluation dataset size: 832
+I0215 15:44:01.369827 4453160384 main.py:378] Batches in each epoch: 7
+I0215 15:44:01.370783 4453160384 main.py:384] Model parameters:
+I0215 15:44:01.370971 4453160384 main.py:386] rnn_module.weight_ih_l0: torch.Size([1024, 256])
+I0215 15:44:01.371072 4453160384 main.py:386] rnn_module.weight_hh_l0: torch.Size([1024, 256])
+I0215 15:44:01.371135 4453160384 main.py:386] rnn_module.bias_ih_l0: torch.Size([1024])
+I0215 15:44:01.371200 4453160384 main.py:386] rnn_module.bias_hh_l0: torch.Size([1024])
+I0215 15:44:01.371384 4453160384 main.py:386] rnn_module.weight_ih_l0_reverse: torch.Size([1024, 256])
+I0215 15:44:01.371461 4453160384 main.py:386] rnn_module.weight_hh_l0_reverse: torch.Size([1024, 256])
+I0215 15:44:01.371524 4453160384 main.py:386] rnn_module.bias_ih_l0_reverse: torch.Size([1024])
+I0215 15:44:01.371596 4453160384 main.py:386] rnn_module.bias_hh_l0_reverse: torch.Size([1024])
+I0215 15:44:01.371653 4453160384 main.py:386] rnn_linear.weight: torch.Size([1, 512])
+I0215 15:44:01.371898 4453160384 main.py:386] rnn_linear.bias: torch.Size([1])
+I0215 15:44:01.371971 4453160384 main.py:386] attention_layer.weight: torch.Size([1, 512])
+I0215 15:44:01.372030 4453160384 main.py:386] attention_layer.bias: torch.Size([1])
+I0215 15:44:01.679886 4453160384 _import_c_extension.py:20] Failed to import cuda module: No module named 'caffe2.python.caffe2_pybind11_state_gpu'
+I0215 15:44:01.680115 4453160384 _import_c_extension.py:29] Failed to import AMD hip module: No module named 'caffe2.python.caffe2_pybind11_state_hip'
+W0215 15:44:01.680302 4453160384 _import_c_extension.py:32] This caffe2 python run does not have GPU support. Will run in CPU only mode.
+I0215 15:44:01.730419 4453160384 main.py:398] Start training.
+I0215 15:44:01.730586 4453160384 dataset.py:128] Resample dataset...
+I0215 15:44:01.730686 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:44:01.869611 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:44:14.236550 4453160384 main.py:429] Epoch [1/20], Step [10/19], Loss: 0.692792, Speed: 9.6615 ms
+I0215 15:44:25.000591 4453160384 utilities.py:21] ==================================================
+I0215 15:44:25.007328 4453160384 utilities.py:50] Total: 2374
+I0215 15:44:25.007473 4453160384 utilities.py:51] Correct: 1197
+I0215 15:44:25.007637 4453160384 utilities.py:52] Accuracy: 0.5042
+I0215 15:44:25.007761 4453160384 utilities.py:53] F1 Score: 0.1049
+I0215 15:44:25.007827 4453160384 utilities.py:54] ROC AUC Score: 0.5076
+I0215 15:44:25.007915 4453160384 utilities.py:55] Average Precision: 0.5145
+I0215 15:44:25.012050 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5022    0.9503    0.6572      1187
+    positive     0.5391    0.0581    0.1049      1187
+
+   micro avg     0.5042    0.5042    0.5042      2374
+   macro avg     0.5206    0.5042    0.3810      2374
+weighted avg     0.5206    0.5042    0.3810      2374
+
+I0215 15:44:25.012185 4453160384 utilities.py:64] ==================================================
+I0215 15:44:25.012297 4453160384 main.py:444] Start inference.
+I0215 15:44:28.155869 4453160384 utilities.py:21] ==================================================
+/Users/ke/anaconda3/lib/python3.7/site-packages/sklearn/metrics/classification.py:1143: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  'precision', 'predicted', average, warn_for)
+I0215 15:44:28.177403 4453160384 utilities.py:50] Total: 832
+I0215 15:44:28.177509 4453160384 utilities.py:51] Correct: 416
+I0215 15:44:28.177654 4453160384 utilities.py:52] Accuracy: 0.5000
+I0215 15:44:28.177804 4453160384 utilities.py:53] F1 Score: 0.0000
+I0215 15:44:28.177915 4453160384 utilities.py:54] ROC AUC Score: 0.5989
+I0215 15:44:28.178020 4453160384 utilities.py:55] Average Precision: 0.6389
+/Users/ke/anaconda3/lib/python3.7/site-packages/sklearn/metrics/classification.py:1143: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples.
+  'precision', 'predicted', average, warn_for)
+I0215 15:44:28.180227 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5000    1.0000    0.6667       416
+    positive     0.0000    0.0000    0.0000       416
+
+   micro avg     0.5000    0.5000    0.5000       832
+   macro avg     0.2500    0.5000    0.3333       832
+weighted avg     0.2500    0.5000    0.3333       832
+
+I0215 15:44:28.180306 4453160384 utilities.py:64] ==================================================
+I0215 15:44:28.180510 4453160384 main.py:398] Start training.
+I0215 15:44:28.180718 4453160384 dataset.py:128] Resample dataset...
+I0215 15:44:28.180890 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:44:28.296313 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:44:40.545733 4453160384 main.py:429] Epoch [2/20], Step [10/19], Loss: 0.691510, Speed: 9.5697 ms
+I0215 15:44:51.379426 4453160384 utilities.py:21] ==================================================
+/Users/ke/anaconda3/lib/python3.7/site-packages/sklearn/metrics/classification.py:1143: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  'precision', 'predicted', average, warn_for)
+I0215 15:44:51.385826 4453160384 utilities.py:50] Total: 2374
+I0215 15:44:51.385933 4453160384 utilities.py:51] Correct: 1187
+I0215 15:44:51.386001 4453160384 utilities.py:52] Accuracy: 0.5000
+I0215 15:44:51.386060 4453160384 utilities.py:53] F1 Score: 0.0000
+I0215 15:44:51.386117 4453160384 utilities.py:54] ROC AUC Score: 0.5192
+I0215 15:44:51.386173 4453160384 utilities.py:55] Average Precision: 0.5362
+/Users/ke/anaconda3/lib/python3.7/site-packages/sklearn/metrics/classification.py:1143: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples.
+  'precision', 'predicted', average, warn_for)
+I0215 15:44:51.389127 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5000    1.0000    0.6667      1187
+    positive     0.0000    0.0000    0.0000      1187
+
+   micro avg     0.5000    0.5000    0.5000      2374
+   macro avg     0.2500    0.5000    0.3333      2374
+weighted avg     0.2500    0.5000    0.3333      2374
+
+I0215 15:44:51.389210 4453160384 utilities.py:64] ==================================================
+I0215 15:44:51.389309 4453160384 main.py:444] Start inference.
+I0215 15:44:53.908870 4453160384 utilities.py:21] ==================================================
+I0215 15:44:53.911977 4453160384 utilities.py:50] Total: 832
+I0215 15:44:53.912081 4453160384 utilities.py:51] Correct: 425
+I0215 15:44:53.912148 4453160384 utilities.py:52] Accuracy: 0.5108
+I0215 15:44:53.912209 4453160384 utilities.py:53] F1 Score: 0.0513
+I0215 15:44:53.912266 4453160384 utilities.py:54] ROC AUC Score: 0.6222
+I0215 15:44:53.912319 4453160384 utilities.py:55] Average Precision: 0.6579
+I0215 15:44:53.914402 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5055    0.9952    0.6704       416
+    positive     0.8462    0.0264    0.0513       416
+
+   micro avg     0.5108    0.5108    0.5108       832
+   macro avg     0.6758    0.5108    0.3609       832
+weighted avg     0.6758    0.5108    0.3609       832
+
+I0215 15:44:53.914499 4453160384 utilities.py:64] ==================================================
+I0215 15:44:53.914567 4453160384 main.py:398] Start training.
+I0215 15:44:53.914654 4453160384 dataset.py:128] Resample dataset...
+I0215 15:44:53.914710 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:44:54.040793 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:45:04.717646 4453160384 main.py:429] Epoch [3/20], Step [10/19], Loss: 0.692757, Speed: 8.3411 ms
+I0215 15:45:13.565390 4453160384 utilities.py:21] ==================================================
+I0215 15:45:13.569317 4453160384 utilities.py:50] Total: 2374
+I0215 15:45:13.569410 4453160384 utilities.py:51] Correct: 1188
+I0215 15:45:13.569473 4453160384 utilities.py:52] Accuracy: 0.5004
+I0215 15:45:13.569530 4453160384 utilities.py:53] F1 Score: 0.0017
+I0215 15:45:13.569583 4453160384 utilities.py:54] ROC AUC Score: 0.5561
+I0215 15:45:13.569633 4453160384 utilities.py:55] Average Precision: 0.5512
+I0215 15:45:13.572447 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5002    1.0000    0.6669      1187
+    positive     1.0000    0.0008    0.0017      1187
+
+   micro avg     0.5004    0.5004    0.5004      2374
+   macro avg     0.7501    0.5004    0.3343      2374
+weighted avg     0.7501    0.5004    0.3343      2374
+
+I0215 15:45:13.572520 4453160384 utilities.py:64] ==================================================
+I0215 15:45:13.572614 4453160384 main.py:444] Start inference.
+I0215 15:45:16.369471 4453160384 utilities.py:21] ==================================================
+I0215 15:45:16.372517 4453160384 utilities.py:50] Total: 832
+I0215 15:45:16.372613 4453160384 utilities.py:51] Correct: 425
+I0215 15:45:16.372677 4453160384 utilities.py:52] Accuracy: 0.5108
+I0215 15:45:16.372734 4453160384 utilities.py:53] F1 Score: 0.0513
+I0215 15:45:16.372786 4453160384 utilities.py:54] ROC AUC Score: 0.6362
+I0215 15:45:16.372837 4453160384 utilities.py:55] Average Precision: 0.6636
+I0215 15:45:16.374906 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5055    0.9952    0.6704       416
+    positive     0.8462    0.0264    0.0513       416
+
+   micro avg     0.5108    0.5108    0.5108       832
+   macro avg     0.6758    0.5108    0.3609       832
+weighted avg     0.6758    0.5108    0.3609       832
+
+I0215 15:45:16.374980 4453160384 utilities.py:64] ==================================================
+I0215 15:45:16.375050 4453160384 main.py:398] Start training.
+I0215 15:45:16.375137 4453160384 dataset.py:128] Resample dataset...
+I0215 15:45:16.375193 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:45:16.481229 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:45:27.074363 4453160384 main.py:429] Epoch [4/20], Step [10/19], Loss: 0.686747, Speed: 8.2757 ms
+I0215 15:45:35.970046 4453160384 utilities.py:21] ==================================================
+I0215 15:45:35.973917 4453160384 utilities.py:50] Total: 2374
+I0215 15:45:35.974018 4453160384 utilities.py:51] Correct: 1194
+I0215 15:45:35.974085 4453160384 utilities.py:52] Accuracy: 0.5029
+I0215 15:45:35.974144 4453160384 utilities.py:53] F1 Score: 0.0150
+I0215 15:45:35.974201 4453160384 utilities.py:54] ROC AUC Score: 0.6064
+I0215 15:45:35.974255 4453160384 utilities.py:55] Average Precision: 0.6088
+I0215 15:45:35.977126 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5015    0.9983    0.6676      1187
+    positive     0.8182    0.0076    0.0150      1187
+
+   micro avg     0.5029    0.5029    0.5029      2374
+   macro avg     0.6598    0.5029    0.3413      2374
+weighted avg     0.6598    0.5029    0.3413      2374
+
+I0215 15:45:35.977216 4453160384 utilities.py:64] ==================================================
+I0215 15:45:35.977313 4453160384 main.py:444] Start inference.
+I0215 15:45:38.437317 4453160384 utilities.py:21] ==================================================
+I0215 15:45:38.440351 4453160384 utilities.py:50] Total: 832
+I0215 15:45:38.440442 4453160384 utilities.py:51] Correct: 423
+I0215 15:45:38.440500 4453160384 utilities.py:52] Accuracy: 0.5084
+I0215 15:45:38.440557 4453160384 utilities.py:53] F1 Score: 0.0510
+I0215 15:45:38.440608 4453160384 utilities.py:54] ROC AUC Score: 0.6860
+I0215 15:45:38.440659 4453160384 utilities.py:55] Average Precision: 0.6942
+I0215 15:45:38.442698 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5043    0.9904    0.6683       416
+    positive     0.7333    0.0264    0.0510       416
+
+   micro avg     0.5084    0.5084    0.5084       832
+   macro avg     0.6188    0.5084    0.3597       832
+weighted avg     0.6188    0.5084    0.3597       832
+
+I0215 15:45:38.442771 4453160384 utilities.py:64] ==================================================
+I0215 15:45:38.442839 4453160384 main.py:398] Start training.
+I0215 15:45:38.442926 4453160384 dataset.py:128] Resample dataset...
+I0215 15:45:38.442981 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:45:38.568640 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:45:49.693150 4453160384 main.py:429] Epoch [5/20], Step [10/19], Loss: 0.684509, Speed: 8.6908 ms
+I0215 15:45:58.410548 4453160384 utilities.py:21] ==================================================
+I0215 15:45:58.414936 4453160384 utilities.py:50] Total: 2374
+I0215 15:45:58.415042 4453160384 utilities.py:51] Correct: 1195
+I0215 15:45:58.415110 4453160384 utilities.py:52] Accuracy: 0.5034
+I0215 15:45:58.415172 4453160384 utilities.py:53] F1 Score: 0.0134
+I0215 15:45:58.415228 4453160384 utilities.py:54] ROC AUC Score: 0.6337
+I0215 15:45:58.415282 4453160384 utilities.py:55] Average Precision: 0.6516
+I0215 15:45:58.418159 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5017    1.0000    0.6682      1187
+    positive     1.0000    0.0067    0.0134      1187
+
+   micro avg     0.5034    0.5034    0.5034      2374
+   macro avg     0.7508    0.5034    0.3408      2374
+weighted avg     0.7508    0.5034    0.3408      2374
+
+I0215 15:45:58.418236 4453160384 utilities.py:64] ==================================================
+I0215 15:45:58.418339 4453160384 main.py:444] Start inference.
+I0215 15:46:00.935863 4453160384 utilities.py:21] ==================================================
+I0215 15:46:00.939002 4453160384 utilities.py:50] Total: 832
+I0215 15:46:00.939101 4453160384 utilities.py:51] Correct: 423
+I0215 15:46:00.939172 4453160384 utilities.py:52] Accuracy: 0.5084
+I0215 15:46:00.939230 4453160384 utilities.py:53] F1 Score: 0.0510
+I0215 15:46:00.939285 4453160384 utilities.py:54] ROC AUC Score: 0.6829
+I0215 15:46:00.939340 4453160384 utilities.py:55] Average Precision: 0.6925
+I0215 15:46:00.941362 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5043    0.9904    0.6683       416
+    positive     0.7333    0.0264    0.0510       416
+
+   micro avg     0.5084    0.5084    0.5084       832
+   macro avg     0.6188    0.5084    0.3597       832
+weighted avg     0.6188    0.5084    0.3597       832
+
+I0215 15:46:00.941441 4453160384 utilities.py:64] ==================================================
+I0215 15:46:00.941513 4453160384 main.py:398] Start training.
+I0215 15:46:00.941604 4453160384 dataset.py:128] Resample dataset...
+I0215 15:46:00.941663 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:46:01.049685 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:46:11.721436 4453160384 main.py:429] Epoch [6/20], Step [10/19], Loss: 0.679144, Speed: 8.3371 ms
+I0215 15:46:20.621140 4453160384 utilities.py:21] ==================================================
+I0215 15:46:20.625177 4453160384 utilities.py:50] Total: 2374
+I0215 15:46:20.625277 4453160384 utilities.py:51] Correct: 1197
+I0215 15:46:20.625344 4453160384 utilities.py:52] Accuracy: 0.5042
+I0215 15:46:20.625403 4453160384 utilities.py:53] F1 Score: 0.0183
+I0215 15:46:20.625458 4453160384 utilities.py:54] ROC AUC Score: 0.6546
+I0215 15:46:20.625513 4453160384 utilities.py:55] Average Precision: 0.6522
+I0215 15:46:20.628376 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5021    0.9992    0.6684      1187
+    positive     0.9167    0.0093    0.0183      1187
+
+   micro avg     0.5042    0.5042    0.5042      2374
+   macro avg     0.7094    0.5042    0.3434      2374
+weighted avg     0.7094    0.5042    0.3434      2374
+
+I0215 15:46:20.628453 4453160384 utilities.py:64] ==================================================
+I0215 15:46:20.628551 4453160384 main.py:444] Start inference.
+I0215 15:46:23.128767 4453160384 utilities.py:21] ==================================================
+I0215 15:46:23.131856 4453160384 utilities.py:50] Total: 832
+I0215 15:46:23.131954 4453160384 utilities.py:51] Correct: 423
+I0215 15:46:23.132021 4453160384 utilities.py:52] Accuracy: 0.5084
+I0215 15:46:23.132081 4453160384 utilities.py:53] F1 Score: 0.0510
+I0215 15:46:23.132138 4453160384 utilities.py:54] ROC AUC Score: 0.7260
+I0215 15:46:23.132191 4453160384 utilities.py:55] Average Precision: 0.7230
+I0215 15:46:23.134253 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5043    0.9904    0.6683       416
+    positive     0.7333    0.0264    0.0510       416
+
+   micro avg     0.5084    0.5084    0.5084       832
+   macro avg     0.6188    0.5084    0.3597       832
+weighted avg     0.6188    0.5084    0.3597       832
+
+I0215 15:46:23.134330 4453160384 utilities.py:64] ==================================================
+I0215 15:46:23.134402 4453160384 main.py:398] Start training.
+I0215 15:46:23.134495 4453160384 dataset.py:128] Resample dataset...
+I0215 15:46:23.134554 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:46:23.237263 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:46:33.534126 4453160384 main.py:429] Epoch [7/20], Step [10/19], Loss: 0.676529, Speed: 8.0443 ms
+I0215 15:46:42.219528 4453160384 utilities.py:21] ==================================================
+I0215 15:46:42.223474 4453160384 utilities.py:50] Total: 2374
+I0215 15:46:42.223575 4453160384 utilities.py:51] Correct: 1253
+I0215 15:46:42.223639 4453160384 utilities.py:52] Accuracy: 0.5278
+I0215 15:46:42.223700 4453160384 utilities.py:53] F1 Score: 0.1665
+I0215 15:46:42.223756 4453160384 utilities.py:54] ROC AUC Score: 0.6312
+I0215 15:46:42.223811 4453160384 utilities.py:55] Average Precision: 0.6232
+I0215 15:46:42.226701 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5149    0.9612    0.6706      1187
+    positive     0.7089    0.0944    0.1665      1187
+
+   micro avg     0.5278    0.5278    0.5278      2374
+   macro avg     0.6119    0.5278    0.4186      2374
+weighted avg     0.6119    0.5278    0.4186      2374
+
+I0215 15:46:42.226779 4453160384 utilities.py:64] ==================================================
+I0215 15:46:42.226877 4453160384 main.py:444] Start inference.
+I0215 15:46:44.666884 4453160384 utilities.py:21] ==================================================
+I0215 15:46:44.670011 4453160384 utilities.py:50] Total: 832
+I0215 15:46:44.670111 4453160384 utilities.py:51] Correct: 423
+I0215 15:46:44.670177 4453160384 utilities.py:52] Accuracy: 0.5084
+I0215 15:46:44.670238 4453160384 utilities.py:53] F1 Score: 0.0510
+I0215 15:46:44.670294 4453160384 utilities.py:54] ROC AUC Score: 0.7410
+I0215 15:46:44.670346 4453160384 utilities.py:55] Average Precision: 0.7458
+I0215 15:46:44.672415 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5043    0.9904    0.6683       416
+    positive     0.7333    0.0264    0.0510       416
+
+   micro avg     0.5084    0.5084    0.5084       832
+   macro avg     0.6188    0.5084    0.3597       832
+weighted avg     0.6188    0.5084    0.3597       832
+
+I0215 15:46:44.672489 4453160384 utilities.py:64] ==================================================
+I0215 15:46:44.672557 4453160384 main.py:398] Start training.
+I0215 15:46:44.672643 4453160384 dataset.py:128] Resample dataset...
+I0215 15:46:44.672698 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:46:44.800360 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:46:55.377182 4453160384 main.py:429] Epoch [8/20], Step [10/19], Loss: 0.653768, Speed: 8.2630 ms
+I0215 15:47:04.845098 4453160384 utilities.py:21] ==================================================
+I0215 15:47:04.849281 4453160384 utilities.py:50] Total: 2374
+I0215 15:47:04.849413 4453160384 utilities.py:51] Correct: 1339
+I0215 15:47:04.849544 4453160384 utilities.py:52] Accuracy: 0.5640
+I0215 15:47:04.849631 4453160384 utilities.py:53] F1 Score: 0.3284
+I0215 15:47:04.849694 4453160384 utilities.py:54] ROC AUC Score: 0.6685
+I0215 15:47:04.849753 4453160384 utilities.py:55] Average Precision: 0.6615
+I0215 15:47:04.852854 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5376    0.9149    0.6773      1187
+    positive     0.7147    0.2131    0.3284      1187
+
+   micro avg     0.5640    0.5640    0.5640      2374
+   macro avg     0.6262    0.5640    0.5028      2374
+weighted avg     0.6262    0.5640    0.5028      2374
+
+I0215 15:47:04.852972 4453160384 utilities.py:64] ==================================================
+I0215 15:47:04.853132 4453160384 main.py:444] Start inference.
+I0215 15:47:07.997961 4453160384 utilities.py:21] ==================================================
+I0215 15:47:08.001079 4453160384 utilities.py:50] Total: 832
+I0215 15:47:08.001178 4453160384 utilities.py:51] Correct: 423
+I0215 15:47:08.001247 4453160384 utilities.py:52] Accuracy: 0.5084
+I0215 15:47:08.001311 4453160384 utilities.py:53] F1 Score: 0.0510
+I0215 15:47:08.001374 4453160384 utilities.py:54] ROC AUC Score: 0.6877
+I0215 15:47:08.001430 4453160384 utilities.py:55] Average Precision: 0.7289
+I0215 15:47:08.003475 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5043    0.9904    0.6683       416
+    positive     0.7333    0.0264    0.0510       416
+
+   micro avg     0.5084    0.5084    0.5084       832
+   macro avg     0.6188    0.5084    0.3597       832
+weighted avg     0.6188    0.5084    0.3597       832
+
+I0215 15:47:08.003554 4453160384 utilities.py:64] ==================================================
+I0215 15:47:08.003625 4453160384 main.py:398] Start training.
+I0215 15:47:08.003717 4453160384 dataset.py:128] Resample dataset...
+I0215 15:47:08.003779 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:47:08.106848 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:47:20.325861 4453160384 main.py:429] Epoch [9/20], Step [10/19], Loss: 0.671147, Speed: 9.5459 ms
+I0215 15:47:29.232095 4453160384 utilities.py:21] ==================================================
+I0215 15:47:29.236078 4453160384 utilities.py:50] Total: 2374
+I0215 15:47:29.236177 4453160384 utilities.py:51] Correct: 1200
+I0215 15:47:29.236243 4453160384 utilities.py:52] Accuracy: 0.5055
+I0215 15:47:29.236303 4453160384 utilities.py:53] F1 Score: 0.0217
+I0215 15:47:29.236359 4453160384 utilities.py:54] ROC AUC Score: 0.6997
+I0215 15:47:29.236418 4453160384 utilities.py:55] Average Precision: 0.7401
+I0215 15:47:29.239303 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5028    1.0000    0.6691      1187
+    positive     1.0000    0.0110    0.0217      1187
+
+   micro avg     0.5055    0.5055    0.5055      2374
+   macro avg     0.7514    0.5055    0.3454      2374
+weighted avg     0.7514    0.5055    0.3454      2374
+
+I0215 15:47:29.239398 4453160384 utilities.py:64] ==================================================
+I0215 15:47:29.239496 4453160384 main.py:444] Start inference.
+I0215 15:47:31.843800 4453160384 utilities.py:21] ==================================================
+I0215 15:47:31.846940 4453160384 utilities.py:50] Total: 832
+I0215 15:47:31.847032 4453160384 utilities.py:51] Correct: 423
+I0215 15:47:31.847091 4453160384 utilities.py:52] Accuracy: 0.5084
+I0215 15:47:31.847150 4453160384 utilities.py:53] F1 Score: 0.0510
+I0215 15:47:31.847202 4453160384 utilities.py:54] ROC AUC Score: 0.6814
+I0215 15:47:31.847251 4453160384 utilities.py:55] Average Precision: 0.7242
+I0215 15:47:31.849281 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5043    0.9904    0.6683       416
+    positive     0.7333    0.0264    0.0510       416
+
+   micro avg     0.5084    0.5084    0.5084       832
+   macro avg     0.6188    0.5084    0.3597       832
+weighted avg     0.6188    0.5084    0.3597       832
+
+I0215 15:47:31.849354 4453160384 utilities.py:64] ==================================================
+I0215 15:47:31.849423 4453160384 main.py:398] Start training.
+I0215 15:47:31.849510 4453160384 dataset.py:128] Resample dataset...
+I0215 15:47:31.849567 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:47:31.975717 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:47:42.287973 4453160384 main.py:429] Epoch [10/20], Step [10/19], Loss: 0.659590, Speed: 8.0563 ms
+I0215 15:47:51.196646 4453160384 utilities.py:21] ==================================================
+I0215 15:47:51.200602 4453160384 utilities.py:50] Total: 2374
+I0215 15:47:51.200702 4453160384 utilities.py:51] Correct: 1259
+I0215 15:47:51.200783 4453160384 utilities.py:52] Accuracy: 0.5303
+I0215 15:47:51.200844 4453160384 utilities.py:53] F1 Score: 0.1214
+I0215 15:47:51.200900 4453160384 utilities.py:54] ROC AUC Score: 0.6859
+I0215 15:47:51.200954 4453160384 utilities.py:55] Average Precision: 0.6997
+I0215 15:47:51.203891 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5157    0.9958    0.6795      1187
+    positive     0.9390    0.0649    0.1214      1187
+
+   micro avg     0.5303    0.5303    0.5303      2374
+   macro avg     0.7274    0.5303    0.4004      2374
+weighted avg     0.7274    0.5303    0.4004      2374
+
+I0215 15:47:51.203969 4453160384 utilities.py:64] ==================================================
+I0215 15:47:51.204041 4453160384 main.py:439] Saving model checkpoint...
+I0215 15:47:51.211422 4453160384 main.py:444] Start inference.
+I0215 15:47:53.782574 4453160384 utilities.py:21] ==================================================
+I0215 15:47:53.785594 4453160384 utilities.py:50] Total: 832
+I0215 15:47:53.785692 4453160384 utilities.py:51] Correct: 429
+I0215 15:47:53.785758 4453160384 utilities.py:52] Accuracy: 0.5156
+I0215 15:47:53.785818 4453160384 utilities.py:53] F1 Score: 0.0778
+I0215 15:47:53.785873 4453160384 utilities.py:54] ROC AUC Score: 0.6929
+I0215 15:47:53.785928 4453160384 utilities.py:55] Average Precision: 0.6939
+I0215 15:47:53.787988 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5080    0.9904    0.6716       416
+    positive     0.8095    0.0409    0.0778       416
+
+   micro avg     0.5156    0.5156    0.5156       832
+   macro avg     0.6588    0.5156    0.3747       832
+weighted avg     0.6588    0.5156    0.3747       832
+
+I0215 15:47:53.788066 4453160384 utilities.py:64] ==================================================
+I0215 15:47:53.788140 4453160384 main.py:398] Start training.
+I0215 15:47:53.788233 4453160384 dataset.py:128] Resample dataset...
+I0215 15:47:53.788290 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:47:53.890753 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:48:04.766716 4453160384 main.py:429] Epoch [11/20], Step [10/19], Loss: 0.628403, Speed: 8.4967 ms
+I0215 15:48:14.864771 4453160384 utilities.py:21] ==================================================
+I0215 15:48:14.868962 4453160384 utilities.py:50] Total: 2374
+I0215 15:48:14.869062 4453160384 utilities.py:51] Correct: 1492
+I0215 15:48:14.869126 4453160384 utilities.py:52] Accuracy: 0.6285
+I0215 15:48:14.869184 4453160384 utilities.py:53] F1 Score: 0.4919
+I0215 15:48:14.869235 4453160384 utilities.py:54] ROC AUC Score: 0.7418
+I0215 15:48:14.869287 4453160384 utilities.py:55] Average Precision: 0.7498
+I0215 15:48:14.872290 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5836    0.8972    0.7072      1187
+    positive     0.7778    0.3597    0.4919      1187
+
+   micro avg     0.6285    0.6285    0.6285      2374
+   macro avg     0.6807    0.6285    0.5996      2374
+weighted avg     0.6807    0.6285    0.5996      2374
+
+I0215 15:48:14.872364 4453160384 utilities.py:64] ==================================================
+I0215 15:48:14.872493 4453160384 main.py:444] Start inference.
+I0215 15:48:17.701798 4453160384 utilities.py:21] ==================================================
+I0215 15:48:17.704864 4453160384 utilities.py:50] Total: 832
+I0215 15:48:17.704960 4453160384 utilities.py:51] Correct: 491
+I0215 15:48:17.705024 4453160384 utilities.py:52] Accuracy: 0.5901
+I0215 15:48:17.705082 4453160384 utilities.py:53] F1 Score: 0.4191
+I0215 15:48:17.705136 4453160384 utilities.py:54] ROC AUC Score: 0.7194
+I0215 15:48:17.705187 4453160384 utilities.py:55] Average Precision: 0.7030
+I0215 15:48:17.707295 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5567    0.8846    0.6834       416
+    positive     0.7193    0.2957    0.4191       416
+
+   micro avg     0.5901    0.5901    0.5901       832
+   macro avg     0.6380    0.5901    0.5512       832
+weighted avg     0.6380    0.5901    0.5512       832
+
+I0215 15:48:17.707370 4453160384 utilities.py:64] ==================================================
+I0215 15:48:17.707439 4453160384 main.py:398] Start training.
+I0215 15:48:17.707525 4453160384 dataset.py:128] Resample dataset...
+I0215 15:48:17.707581 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:48:17.833904 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:48:28.083631 4453160384 main.py:429] Epoch [12/20], Step [10/19], Loss: 0.600535, Speed: 8.0074 ms
+I0215 15:48:36.649627 4453160384 utilities.py:21] ==================================================
+I0215 15:48:36.658730 4453160384 utilities.py:50] Total: 2374
+I0215 15:48:36.658831 4453160384 utilities.py:51] Correct: 1540
+I0215 15:48:36.658896 4453160384 utilities.py:52] Accuracy: 0.6487
+I0215 15:48:36.658956 4453160384 utilities.py:53] F1 Score: 0.5346
+I0215 15:48:36.659011 4453160384 utilities.py:54] ROC AUC Score: 0.7518
+I0215 15:48:36.659064 4453160384 utilities.py:55] Average Precision: 0.7524
+I0215 15:48:36.662129 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5998    0.8939    0.7179      1187
+    positive     0.7917    0.4035    0.5346      1187
+
+   micro avg     0.6487    0.6487    0.6487      2374
+   macro avg     0.6958    0.6487    0.6262      2374
+weighted avg     0.6958    0.6487    0.6262      2374
+
+I0215 15:48:36.662208 4453160384 utilities.py:64] ==================================================
+I0215 15:48:36.662306 4453160384 main.py:444] Start inference.
+I0215 15:48:39.126035 4453160384 utilities.py:21] ==================================================
+I0215 15:48:39.129150 4453160384 utilities.py:50] Total: 832
+I0215 15:48:39.129245 4453160384 utilities.py:51] Correct: 458
+I0215 15:48:39.129307 4453160384 utilities.py:52] Accuracy: 0.5505
+I0215 15:48:39.129381 4453160384 utilities.py:53] F1 Score: 0.2780
+I0215 15:48:39.129436 4453160384 utilities.py:54] ROC AUC Score: 0.7346
+I0215 15:48:39.129487 4453160384 utilities.py:55] Average Precision: 0.7189
+I0215 15:48:39.131586 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5288    0.9279    0.6736       416
+    positive     0.7059    0.1731    0.2780       416
+
+   micro avg     0.5505    0.5505    0.5505       832
+   macro avg     0.6173    0.5505    0.4758       832
+weighted avg     0.6173    0.5505    0.4758       832
+
+I0215 15:48:39.131659 4453160384 utilities.py:64] ==================================================
+I0215 15:48:39.131726 4453160384 main.py:398] Start training.
+I0215 15:48:39.131812 4453160384 dataset.py:128] Resample dataset...
+I0215 15:48:39.131873 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:48:39.234595 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:48:49.569267 4453160384 main.py:429] Epoch [13/20], Step [10/19], Loss: 0.568703, Speed: 8.0738 ms
+I0215 15:48:58.303364 4453160384 utilities.py:21] ==================================================
+I0215 15:48:58.307588 4453160384 utilities.py:50] Total: 2374
+I0215 15:48:58.307689 4453160384 utilities.py:51] Correct: 1618
+I0215 15:48:58.307757 4453160384 utilities.py:52] Accuracy: 0.6816
+I0215 15:48:58.307816 4453160384 utilities.py:53] F1 Score: 0.5918
+I0215 15:48:58.307872 4453160384 utilities.py:54] ROC AUC Score: 0.7880
+I0215 15:48:58.307925 4453160384 utilities.py:55] Average Precision: 0.7896
+I0215 15:48:58.311028 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.6261    0.9014    0.7390      1187
+    positive     0.8241    0.4617    0.5918      1187
+
+   micro avg     0.6816    0.6816    0.6816      2374
+   macro avg     0.7251    0.6816    0.6654      2374
+weighted avg     0.7251    0.6816    0.6654      2374
+
+I0215 15:48:58.311107 4453160384 utilities.py:64] ==================================================
+I0215 15:48:58.311205 4453160384 main.py:444] Start inference.
+I0215 15:49:00.790972 4453160384 utilities.py:21] ==================================================
+I0215 15:49:00.794122 4453160384 utilities.py:50] Total: 832
+I0215 15:49:00.794215 4453160384 utilities.py:51] Correct: 499
+I0215 15:49:00.794281 4453160384 utilities.py:52] Accuracy: 0.5998
+I0215 15:49:00.794354 4453160384 utilities.py:53] F1 Score: 0.4689
+I0215 15:49:00.794440 4453160384 utilities.py:54] ROC AUC Score: 0.7178
+I0215 15:49:00.794504 4453160384 utilities.py:55] Average Precision: 0.7064
+I0215 15:49:00.796649 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5668    0.8462    0.6789       416
+    positive     0.6967    0.3534    0.4689       416
+
+   micro avg     0.5998    0.5998    0.5998       832
+   macro avg     0.6318    0.5998    0.5739       832
+weighted avg     0.6318    0.5998    0.5739       832
+
+I0215 15:49:00.796726 4453160384 utilities.py:64] ==================================================
+I0215 15:49:00.796798 4453160384 main.py:398] Start training.
+I0215 15:49:00.796890 4453160384 dataset.py:128] Resample dataset...
+I0215 15:49:00.796951 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:49:00.900226 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:49:11.232403 4453160384 main.py:429] Epoch [14/20], Step [10/19], Loss: 0.578252, Speed: 8.0718 ms
+I0215 15:49:20.829611 4453160384 utilities.py:21] ==================================================
+I0215 15:49:20.834917 4453160384 utilities.py:50] Total: 2374
+I0215 15:49:20.835041 4453160384 utilities.py:51] Correct: 1691
+I0215 15:49:20.835284 4453160384 utilities.py:52] Accuracy: 0.7123
+I0215 15:49:20.835397 4453160384 utilities.py:53] F1 Score: 0.6758
+I0215 15:49:20.835609 4453160384 utilities.py:54] ROC AUC Score: 0.8023
+I0215 15:49:20.835687 4453160384 utilities.py:55] Average Precision: 0.8152
+I0215 15:49:20.839203 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.6733    0.8248    0.7414      1187
+    positive     0.7739    0.5998    0.6758      1187
+
+   micro avg     0.7123    0.7123    0.7123      2374
+   macro avg     0.7236    0.7123    0.7086      2374
+weighted avg     0.7236    0.7123    0.7086      2374
+
+I0215 15:49:20.839325 4453160384 utilities.py:64] ==================================================
+I0215 15:49:20.839429 4453160384 main.py:444] Start inference.
+I0215 15:49:24.318982 4453160384 utilities.py:21] ==================================================
+I0215 15:49:24.322141 4453160384 utilities.py:50] Total: 832
+I0215 15:49:24.322234 4453160384 utilities.py:51] Correct: 507
+I0215 15:49:24.322294 4453160384 utilities.py:52] Accuracy: 0.6094
+I0215 15:49:24.322352 4453160384 utilities.py:53] F1 Score: 0.4992
+I0215 15:49:24.322405 4453160384 utilities.py:54] ROC AUC Score: 0.7101
+I0215 15:49:24.322456 4453160384 utilities.py:55] Average Precision: 0.7018
+I0215 15:49:24.324587 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5760    0.8293    0.6798       416
+    positive     0.6953    0.3894    0.4992       416
+
+   micro avg     0.6094    0.6094    0.6094       832
+   macro avg     0.6356    0.6094    0.5895       832
+weighted avg     0.6356    0.6094    0.5895       832
+
+I0215 15:49:24.324661 4453160384 utilities.py:64] ==================================================
+I0215 15:49:24.324728 4453160384 main.py:398] Start training.
+I0215 15:49:24.324813 4453160384 dataset.py:128] Resample dataset...
+I0215 15:49:24.324869 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:49:24.452658 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:49:35.658715 4453160384 main.py:429] Epoch [15/20], Step [10/19], Loss: 0.527012, Speed: 8.7546 ms
+I0215 15:49:46.678627 4453160384 utilities.py:21] ==================================================
+I0215 15:49:46.682744 4453160384 utilities.py:50] Total: 2374
+I0215 15:49:46.682840 4453160384 utilities.py:51] Correct: 1657
+I0215 15:49:46.682902 4453160384 utilities.py:52] Accuracy: 0.6980
+I0215 15:49:46.682957 4453160384 utilities.py:53] F1 Score: 0.6629
+I0215 15:49:46.683007 4453160384 utilities.py:54] ROC AUC Score: 0.7997
+I0215 15:49:46.683058 4453160384 utilities.py:55] Average Precision: 0.8105
+I0215 15:49:46.686187 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.6639    0.8020    0.7264      1187
+    positive     0.7500    0.5939    0.6629      1187
+
+   micro avg     0.6980    0.6980    0.6980      2374
+   macro avg     0.7069    0.6980    0.6947      2374
+weighted avg     0.7069    0.6980    0.6947      2374
+
+I0215 15:49:46.686259 4453160384 utilities.py:64] ==================================================
+I0215 15:49:46.686353 4453160384 main.py:444] Start inference.
+I0215 15:49:49.301119 4453160384 utilities.py:21] ==================================================
+I0215 15:49:49.304214 4453160384 utilities.py:50] Total: 832
+I0215 15:49:49.304321 4453160384 utilities.py:51] Correct: 507
+I0215 15:49:49.304386 4453160384 utilities.py:52] Accuracy: 0.6094
+I0215 15:49:49.304442 4453160384 utilities.py:53] F1 Score: 0.4992
+I0215 15:49:49.304494 4453160384 utilities.py:54] ROC AUC Score: 0.7100
+I0215 15:49:49.304543 4453160384 utilities.py:55] Average Precision: 0.7020
+I0215 15:49:49.306689 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5760    0.8293    0.6798       416
+    positive     0.6953    0.3894    0.4992       416
+
+   micro avg     0.6094    0.6094    0.6094       832
+   macro avg     0.6356    0.6094    0.5895       832
+weighted avg     0.6356    0.6094    0.5895       832
+
+I0215 15:49:49.306765 4453160384 utilities.py:64] ==================================================
+I0215 15:49:49.306831 4453160384 main.py:398] Start training.
+I0215 15:49:49.306935 4453160384 dataset.py:128] Resample dataset...
+I0215 15:49:49.306993 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:49:49.410288 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:49:59.755500 4453160384 main.py:429] Epoch [16/20], Step [10/19], Loss: 0.589574, Speed: 8.0820 ms
+I0215 15:50:08.613409 4453160384 utilities.py:21] ==================================================
+I0215 15:50:08.617326 4453160384 utilities.py:50] Total: 2374
+I0215 15:50:08.617423 4453160384 utilities.py:51] Correct: 1696
+I0215 15:50:08.617491 4453160384 utilities.py:52] Accuracy: 0.7144
+I0215 15:50:08.617551 4453160384 utilities.py:53] F1 Score: 0.6793
+I0215 15:50:08.617605 4453160384 utilities.py:54] ROC AUC Score: 0.8042
+I0215 15:50:08.617658 4453160384 utilities.py:55] Average Precision: 0.8142
+I0215 15:50:08.620751 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.6759    0.8239    0.7426      1187
+    positive     0.7745    0.6049    0.6793      1187
+
+   micro avg     0.7144    0.7144    0.7144      2374
+   macro avg     0.7252    0.7144    0.7109      2374
+weighted avg     0.7252    0.7144    0.7109      2374
+
+I0215 15:50:08.620828 4453160384 utilities.py:64] ==================================================
+I0215 15:50:08.620928 4453160384 main.py:444] Start inference.
+I0215 15:50:11.117144 4453160384 utilities.py:21] ==================================================
+I0215 15:50:11.120220 4453160384 utilities.py:50] Total: 832
+I0215 15:50:11.120321 4453160384 utilities.py:51] Correct: 513
+I0215 15:50:11.120388 4453160384 utilities.py:52] Accuracy: 0.6166
+I0215 15:50:11.120448 4453160384 utilities.py:53] F1 Score: 0.5203
+I0215 15:50:11.120504 4453160384 utilities.py:54] ROC AUC Score: 0.7025
+I0215 15:50:11.120559 4453160384 utilities.py:55] Average Precision: 0.6992
+I0215 15:50:11.122674 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5832    0.8173    0.6807       416
+    positive     0.6948    0.4159    0.5203       416
+
+   micro avg     0.6166    0.6166    0.6166       832
+   macro avg     0.6390    0.6166    0.6005       832
+weighted avg     0.6390    0.6166    0.6005       832
+
+I0215 15:50:11.122754 4453160384 utilities.py:64] ==================================================
+I0215 15:50:11.122823 4453160384 main.py:398] Start training.
+I0215 15:50:11.122913 4453160384 dataset.py:128] Resample dataset...
+I0215 15:50:11.122972 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:50:11.248744 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:50:21.633069 4453160384 main.py:429] Epoch [17/20], Step [10/19], Loss: 0.511294, Speed: 8.1126 ms
+I0215 15:50:30.190647 4453160384 utilities.py:21] ==================================================
+I0215 15:50:30.199994 4453160384 utilities.py:50] Total: 2374
+I0215 15:50:30.200098 4453160384 utilities.py:51] Correct: 1703
+I0215 15:50:30.200164 4453160384 utilities.py:52] Accuracy: 0.7174
+I0215 15:50:30.200223 4453160384 utilities.py:53] F1 Score: 0.6901
+I0215 15:50:30.200278 4453160384 utilities.py:54] ROC AUC Score: 0.8013
+I0215 15:50:30.200330 4453160384 utilities.py:55] Average Precision: 0.8155
+I0215 15:50:30.203478 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.6848    0.8054    0.7402      1187
+    positive     0.7638    0.6293    0.6901      1187
+
+   micro avg     0.7174    0.7174    0.7174      2374
+   macro avg     0.7243    0.7174    0.7151      2374
+weighted avg     0.7243    0.7174    0.7151      2374
+
+I0215 15:50:30.203556 4453160384 utilities.py:64] ==================================================
+I0215 15:50:30.203653 4453160384 main.py:444] Start inference.
+I0215 15:50:32.741416 4453160384 utilities.py:21] ==================================================
+I0215 15:50:32.744479 4453160384 utilities.py:50] Total: 832
+I0215 15:50:32.744589 4453160384 utilities.py:51] Correct: 505
+I0215 15:50:32.744652 4453160384 utilities.py:52] Accuracy: 0.6070
+I0215 15:50:32.744709 4453160384 utilities.py:53] F1 Score: 0.4899
+I0215 15:50:32.744760 4453160384 utilities.py:54] ROC AUC Score: 0.7110
+I0215 15:50:32.744809 4453160384 utilities.py:55] Average Precision: 0.7023
+I0215 15:50:32.746937 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5733    0.8365    0.6804       416
+    positive     0.6978    0.3774    0.4899       416
+
+   micro avg     0.6070    0.6070    0.6070       832
+   macro avg     0.6355    0.6070    0.5851       832
+weighted avg     0.6355    0.6070    0.5851       832
+
+I0215 15:50:32.747012 4453160384 utilities.py:64] ==================================================
+I0215 15:50:32.747078 4453160384 main.py:398] Start training.
+I0215 15:50:32.747164 4453160384 dataset.py:128] Resample dataset...
+I0215 15:50:32.747220 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:50:32.850615 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:50:43.030951 4453160384 main.py:429] Epoch [18/20], Step [10/19], Loss: 0.603125, Speed: 7.9532 ms
+I0215 15:50:51.952754 4453160384 utilities.py:21] ==================================================
+I0215 15:50:51.956699 4453160384 utilities.py:50] Total: 2374
+I0215 15:50:51.956800 4453160384 utilities.py:51] Correct: 1696
+I0215 15:50:51.956869 4453160384 utilities.py:52] Accuracy: 0.7144
+I0215 15:50:51.956997 4453160384 utilities.py:53] F1 Score: 0.6768
+I0215 15:50:51.957078 4453160384 utilities.py:54] ROC AUC Score: 0.8085
+I0215 15:50:51.957142 4453160384 utilities.py:55] Average Precision: 0.8146
+I0215 15:50:51.960298 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.6740    0.8307    0.7442      1187
+    positive     0.7794    0.5981    0.6768      1187
+
+   micro avg     0.7144    0.7144    0.7144      2374
+   macro avg     0.7267    0.7144    0.7105      2374
+weighted avg     0.7267    0.7144    0.7105      2374
+
+I0215 15:50:51.960378 4453160384 utilities.py:64] ==================================================
+I0215 15:50:51.960478 4453160384 main.py:444] Start inference.
+I0215 15:50:54.417802 4453160384 utilities.py:21] ==================================================
+I0215 15:50:54.420825 4453160384 utilities.py:50] Total: 832
+I0215 15:50:54.420925 4453160384 utilities.py:51] Correct: 507
+I0215 15:50:54.420991 4453160384 utilities.py:52] Accuracy: 0.6094
+I0215 15:50:54.421051 4453160384 utilities.py:53] F1 Score: 0.5038
+I0215 15:50:54.421107 4453160384 utilities.py:54] ROC AUC Score: 0.7087
+I0215 15:50:54.421160 4453160384 utilities.py:55] Average Precision: 0.7021
+I0215 15:50:54.423298 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5767    0.8221    0.6779       416
+    positive     0.6904    0.3966    0.5038       416
+
+   micro avg     0.6094    0.6094    0.6094       832
+   macro avg     0.6336    0.6094    0.5909       832
+weighted avg     0.6336    0.6094    0.5909       832
+
+I0215 15:50:54.423375 4453160384 utilities.py:64] ==================================================
+I0215 15:50:54.423448 4453160384 main.py:398] Start training.
+I0215 15:50:54.423537 4453160384 dataset.py:128] Resample dataset...
+I0215 15:50:54.423596 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:50:54.526789 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:51:04.797533 4453160384 main.py:429] Epoch [19/20], Step [10/19], Loss: 0.549066, Speed: 8.0238 ms
+I0215 15:51:13.569976 4453160384 utilities.py:21] ==================================================
+I0215 15:51:13.573993 4453160384 utilities.py:50] Total: 2374
+I0215 15:51:13.574095 4453160384 utilities.py:51] Correct: 1730
+I0215 15:51:13.574160 4453160384 utilities.py:52] Accuracy: 0.7287
+I0215 15:51:13.574219 4453160384 utilities.py:53] F1 Score: 0.7005
+I0215 15:51:13.574287 4453160384 utilities.py:54] ROC AUC Score: 0.8103
+I0215 15:51:13.574340 4453160384 utilities.py:55] Average Precision: 0.8177
+I0215 15:51:13.577486 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.6924    0.8231    0.7521      1187
+    positive     0.7819    0.6344    0.7005      1187
+
+   micro avg     0.7287    0.7287    0.7287      2374
+   macro avg     0.7372    0.7287    0.7263      2374
+weighted avg     0.7372    0.7287    0.7263      2374
+
+I0215 15:51:13.577561 4453160384 utilities.py:64] ==================================================
+I0215 15:51:13.577655 4453160384 main.py:444] Start inference.
+I0215 15:51:16.212904 4453160384 utilities.py:21] ==================================================
+I0215 15:51:16.216019 4453160384 utilities.py:50] Total: 832
+I0215 15:51:16.216112 4453160384 utilities.py:51] Correct: 513
+I0215 15:51:16.216174 4453160384 utilities.py:52] Accuracy: 0.6166
+I0215 15:51:16.216233 4453160384 utilities.py:53] F1 Score: 0.5203
+I0215 15:51:16.216285 4453160384 utilities.py:54] ROC AUC Score: 0.7023
+I0215 15:51:16.216342 4453160384 utilities.py:55] Average Precision: 0.6997
+I0215 15:51:16.218480 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5832    0.8173    0.6807       416
+    positive     0.6948    0.4159    0.5203       416
+
+   micro avg     0.6166    0.6166    0.6166       832
+   macro avg     0.6390    0.6166    0.6005       832
+weighted avg     0.6390    0.6166    0.6005       832
+
+I0215 15:51:16.218554 4453160384 utilities.py:64] ==================================================
+I0215 15:51:16.218626 4453160384 main.py:398] Start training.
+I0215 15:51:16.218718 4453160384 dataset.py:128] Resample dataset...
+I0215 15:51:16.218775 4453160384 dataset.py:175] Number of instances in labels: 13344
+I0215 15:51:16.347962 4453160384 dataset.py:130] Resample dataset completed!
+I0215 15:51:26.595642 4453160384 main.py:429] Epoch [20/20], Step [10/19], Loss: 0.531038, Speed: 8.0058 ms
+I0215 15:51:35.153419 4453160384 utilities.py:21] ==================================================
+I0215 15:51:35.157429 4453160384 utilities.py:50] Total: 2374
+I0215 15:51:35.157522 4453160384 utilities.py:51] Correct: 1696
+I0215 15:51:35.157587 4453160384 utilities.py:52] Accuracy: 0.7144
+I0215 15:51:35.157706 4453160384 utilities.py:53] F1 Score: 0.6861
+I0215 15:51:35.157786 4453160384 utilities.py:54] ROC AUC Score: 0.8054
+I0215 15:51:35.157872 4453160384 utilities.py:55] Average Precision: 0.8116
+I0215 15:51:35.161041 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.6817    0.8045    0.7380      1187
+    positive     0.7616    0.6243    0.6861      1187
+
+   micro avg     0.7144    0.7144    0.7144      2374
+   macro avg     0.7216    0.7144    0.7121      2374
+weighted avg     0.7216    0.7144    0.7121      2374
+
+I0215 15:51:35.161118 4453160384 utilities.py:64] ==================================================
+I0215 15:51:35.161215 4453160384 main.py:439] Saving model checkpoint...
+I0215 15:51:35.168560 4453160384 main.py:444] Start inference.
+I0215 15:51:37.704485 4453160384 utilities.py:21] ==================================================
+I0215 15:51:37.707506 4453160384 utilities.py:50] Total: 832
+I0215 15:51:37.707607 4453160384 utilities.py:51] Correct: 514
+I0215 15:51:37.707674 4453160384 utilities.py:52] Accuracy: 0.6178
+I0215 15:51:37.707735 4453160384 utilities.py:53] F1 Score: 0.5196
+I0215 15:51:37.707791 4453160384 utilities.py:54] ROC AUC Score: 0.7043
+I0215 15:51:37.707844 4453160384 utilities.py:55] Average Precision: 0.7007
+I0215 15:51:37.709989 4453160384 utilities.py:63] Classification Report:
+              precision    recall  f1-score   support
+
+    negative     0.5836    0.8221    0.6826       416
+    positive     0.6992    0.4135    0.5196       416
+
+   micro avg     0.6178    0.6178    0.6178       832
+   macro avg     0.6414    0.6178    0.6011       832
+weighted avg     0.6414    0.6178    0.6011       832
+
+I0215 15:51:37.710078 4453160384 utilities.py:64] ==================================================
+I0215 15:51:37.710148 4453160384 main.py:470] Train/Eval completed.

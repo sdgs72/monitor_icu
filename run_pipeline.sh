@@ -3,7 +3,7 @@
 set -x
 
 TARGET="death"
-EXPERIMENT="debug"
+EXPERIMENT="exp_2_d"
 
 DATA_DIR="./data"
 LOG_DIR="./logs"
@@ -15,19 +15,19 @@ python code/main.py \
   --model_type="rnn" \
   --rnn_type="lstm" \
   --rnn_bidirectional \
-  --nouse_attention \
+  --use_attention \
   --batch_size=128 \
   --input_size=256 \
   --rnn_hidden_size=256 \
-  --num_epochs=10 \
+  --num_epochs=20 \
   --learning_rate=1e-3 \
   --train_data_split="train" \
   --eval_data_split="val" \
   --data_dir="${DATA_DIR}" \
   --target_label="${TARGET}" \
   --block_size=6 \
-  --history_window=28 \
-  --prediction_window=2 \
+  --history_window=56 \
+  --prediction_window=4 \
   --train_dataset_size=0 \
   --eval_dataset_size=0 \
   --rnn_layers=1 \
