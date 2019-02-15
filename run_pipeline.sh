@@ -12,21 +12,21 @@ mkdir -p ${LOG_DIR}
 
 python code/main.py \
   --phase="pipeline" \
-  --model_type="lr" \
+  --model_type="rnn" \
   --rnn_type="lstm" \
-  --nornn_bidirectional \
+  --rnn_bidirectional \
   --nouse_attention \
   --batch_size=128 \
   --input_size=256 \
   --rnn_hidden_size=256 \
   --num_epochs=10 \
-  --learning_rate=1e-2 \
+  --learning_rate=1e-3 \
   --train_data_split="train" \
   --eval_data_split="val" \
   --data_dir="${DATA_DIR}" \
   --target_label="${TARGET}" \
   --block_size=6 \
-  --history_window=8 \
+  --history_window=28 \
   --prediction_window=2 \
   --train_dataset_size=0 \
   --eval_dataset_size=0 \
