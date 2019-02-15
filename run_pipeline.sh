@@ -26,7 +26,7 @@ python code/main.py \
   --data_dir="${DATA_DIR}" \
   --target_label="${TARGET}" \
   --block_size=6 \
-  --history_window=8 \
+  --history_window=28 \
   --prediction_window=2 \
   --train_dataset_size=0 \
   --eval_dataset_size=0 \
