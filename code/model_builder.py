@@ -59,7 +59,7 @@ class MimicModel(torch.nn.Module):
     else:
       raise ValueError("Only `LSTM` and `GRU` are supported `rnn_type`.")
 
-    num_directions = 2 if self.model_type == "rnn" and self.bidirectional else 1
+    num_directions = 2 if self.model_type == "rnn" and self.rnn_bidirectional else 1
 
     # if self.train_embedding:
     #   if not vocabulary_path or not os.path.exists(vocabulary_path):
