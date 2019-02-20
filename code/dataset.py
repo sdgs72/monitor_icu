@@ -43,7 +43,8 @@ class MimicDataset(torch.utils.data.Dataset):
       prediction_window: Length of target event occurrence in future blocks.
       dataset_size: Size of generated dataset. If 0, then use all positive data
           with equal size of negative samples.
-      pca_dim: Whether to perform pca for reduced dimensionality.
+      pca_dim: Whether to perform pca for reduced dimensionality. If None then
+          just return the original dimensionality.
       pca_decomposer_path: Path to precomputed (on `train`) pca decomposer.
       standardize: Whether to standardize inputs for zero mean and unit variance.
       standard_scaler_path: Path to precomputed (on `train`) standardizer.
@@ -78,7 +79,7 @@ class MimicDataset(torch.utils.data.Dataset):
 
     self.resample()
 
-    if self.pca_dim or self.standardize:
+    if self.pca_dim:
       self.decomposer, self.standard_scaler = self._preprocessing()
     return
 
@@ -92,8 +93,8 @@ class MimicDataset(torch.utils.data.Dataset):
     if self.pca_dim:
       data = self.decomposer.transform(data)
 
-    if self.standardize:
-      data = self.standard_scaler.transform(data)
+      if self.standardize:
+        data = self.standard_scaler.transform(data)
 
     return data.astype(np.float32), label
 
@@ -140,18 +141,28 @@ class MimicDataset(torch.utils.data.Dataset):
     if self.phase == "training":
       decomposer = PCA(n_components=self.pca_dim)
       transformed_data = decomposer.fit_transform(aggregated_data)
-
-      standard_scaler = StandardScaler()
-      standard_scaler.fit(transformed_data)
-
       joblib.dump(decomposer, self.pca_decomposer_path)
-      joblib.dump(standard_scaler, self.standard_scaler_path)
+
+      if self.standardize:
+        standard_scaler = StandardScaler()
+        standard_scaler.fit(transformed_data)
+        joblib.dump(standard_scaler, self.standard_scaler_path)
+
     elif self.phase == "inference":
-      assert self.pca_decomposer_path is not None, "Please specify `pca_decomposer_path`."
-      assert self.standard_scaler_path is not None, "Please specify `standard_scaler_path`."
+      if (not self.pca_decomposer_path or
+          not os.path.exists(self.pca_decomposer_path)):
+        raise AssertionError(
+            "`pca_decomposer_path` is not defined or not found.")
 
       decomposer = joblib.load(self.pca_decomposer_path)
-      standard_scaler = joblib.load(self.standard_scaler_path)
+
+      if self.standardize:
+        if (not self.standard_scaler_path or
+            not os.path.exists(self.standard_scaler_path)):
+          raise AssertionError(
+              "`standard_scaler_path` is not defined or not found.")
+        standard_scaler = joblib.load(self.standard_scaler_path)
+
     else:
       raise ValueError("Only `training` and `inference` are supported `phase`.")
 

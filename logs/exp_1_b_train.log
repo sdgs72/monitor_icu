@@ -1,0 +1,45 @@
+I0215 14:02:21.109232 4703860160 main.py:527] Saved model parameters:
+I0215 14:02:21.109389 4703860160 main.py:529] 0: model_type=rnn
+I0215 14:02:21.109451 4703860160 main.py:529] 1: input_size=256
+I0215 14:02:21.109503 4703860160 main.py:529] 2: rnn_hidden_size=256
+I0215 14:02:21.109552 4703860160 main.py:529] 3: use_attention=False
+I0215 14:02:21.109598 4703860160 main.py:529] 4: rnn_type=lstm
+I0215 14:02:21.109643 4703860160 main.py:529] 5: rnn_layers=1
+I0215 14:02:21.109690 4703860160 main.py:529] 6: rnn_dropout=0.0
+I0215 14:02:21.109735 4703860160 main.py:529] 7: rnn_bidirectional=True
+I0215 14:02:21.109781 4703860160 main.py:529] 8: standardize=True
+I0215 14:02:21.109827 4703860160 main.py:529] 9: block_size=6
+I0215 14:02:21.109872 4703860160 main.py:529] 10: history_window=28
+I0215 14:02:21.109917 4703860160 main.py:529] 11: prediction_window=2
+I0215 14:02:21.109962 4703860160 main.py:529] 12: target_label=death
+I0215 14:02:21.110009 4703860160 main.py:529] 13: data_dir=./data
+I0215 14:02:21.110053 4703860160 main.py:529] 14: lr_pooling=mean
+I0215 14:02:21.110098 4703860160 main.py:529] 15: save_per_epochs=10
+I0215 14:02:21.110152 4703860160 main.py:545] Mode: Train/Eval pipeline
+I0215 14:02:21.110289 4703860160 main.py:313] 0: code/main.py
+I0215 14:02:21.110346 4703860160 main.py:313] 1: --phase=pipeline
+I0215 14:02:21.110393 4703860160 main.py:313] 2: --model_type=rnn
+I0215 14:02:21.110440 4703860160 main.py:313] 3: --rnn_type=lstm
+I0215 14:02:21.110485 4703860160 main.py:313] 4: --rnn_bidirectional
+I0215 14:02:21.110531 4703860160 main.py:313] 5: --nouse_attention
+I0215 14:02:21.110576 4703860160 main.py:313] 6: --batch_size=128
+I0215 14:02:21.110622 4703860160 main.py:313] 7: --input_size=256
+I0215 14:02:21.110667 4703860160 main.py:313] 8: --rnn_hidden_size=256
+I0215 14:02:21.110714 4703860160 main.py:313] 9: --num_epochs=20
+I0215 14:02:21.110759 4703860160 main.py:313] 10: --learning_rate=1e-3
+I0215 14:02:21.110805 4703860160 main.py:313] 11: --train_data_split=train
+I0215 14:02:21.110850 4703860160 main.py:313] 12: --eval_data_split=val
+I0215 14:02:21.110895 4703860160 main.py:313] 13: --data_dir=./data
+I0215 14:02:21.110939 4703860160 main.py:313] 14: --target_label=death
+I0215 14:02:21.110985 4703860160 main.py:313] 15: --block_size=6
+I0215 14:02:21.111037 4703860160 main.py:313] 16: --history_window=28
+I0215 14:02:21.111083 4703860160 main.py:313] 17: --prediction_window=2
+I0215 14:02:21.111129 4703860160 main.py:313] 18: --train_dataset_size=0
+I0215 14:02:21.111173 4703860160 main.py:313] 19: --eval_dataset_size=0
+I0215 14:02:21.111218 4703860160 main.py:313] 20: --rnn_layers=1
+I0215 14:02:21.111264 4703860160 main.py:313] 21: --rnn_dropout=0
+I0215 14:02:21.111311 4703860160 main.py:313] 22: --standardize
+I0215 14:02:21.111356 4703860160 main.py:313] 23: --checkpoint_dir=./experiments
+I0215 14:02:21.111402 4703860160 main.py:313] 24: --experiment_name=exp_1_b
+I0215 14:02:23.630967 4703860160 dataset.py:116] Number of admissions: 13344
+I0215 14:02:23.631139 4703860160 dataset.py:117] Preprocess dataset with block size of 6

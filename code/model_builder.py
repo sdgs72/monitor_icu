@@ -20,6 +20,8 @@ class MimicModel(torch.nn.Module):
       rnn_layers,
       rnn_dropout,
       rnn_bidirectional,
+      # train_embedding,
+      # vocabulary_path,
       lr_pooling="mean",
       lr_history_window=None,
   ):
@@ -28,11 +30,11 @@ class MimicModel(torch.nn.Module):
     Args:
       model_type: `lr` or `rnn`.
       input_size: Dimension of input vector.
-      hidden_size: Dimension of hidden embeddings.
+      rnn_hidden_size: Dimension of hidden embeddings.
       rnn_type: `LSTM` or `GRU`.
       num_layers: Number of layers for stacked LSTM.
       dropout: Float, dropout rate.
-      bidirectional: True if using bidirectional LSTM otherwise False.
+      rnn_bidirectional: True if using bidirectional LSTM otherwise False.
       use_attention: True if using attention mechanism otherwise False.
       lr_pooling: `concat`, `last`, `mean` or `max`.
     """
@@ -48,6 +50,7 @@ class MimicModel(torch.nn.Module):
     self.use_attention = use_attention
     self.lr_pooling = lr_pooling
     self.lr_history_window = lr_history_window
+    # self.train_embedding = train_embedding
 
     if self.rnn_type == "lstm":
       module = torch.nn.LSTM
@@ -56,7 +59,14 @@ class MimicModel(torch.nn.Module):
     else:
       raise ValueError("Only `LSTM` and `GRU` are supported `rnn_type`.")
 
-    num_directions = 2 if self.model_type == "rnn" and self.bidirectional else 1
+    num_directions = 2 if self.model_type == "rnn" and self.rnn_bidirectional else 1
+
+    # if self.train_embedding:
+    #   if not vocabulary_path or not os.path.exists(vocabulary_path):
+    #     raise AssertionError("`vocabulary_path` is not defined or not found.")
+
+    #   self.vocabulary = self.load_vocabulary(vocabulary_path)
+    #   self.embedding = torch.nn.Embedding(len(self.vocabulary), self.input_size)
 
     if self.model_type == "rnn":
       self.rnn_module = module(
@@ -68,11 +78,11 @@ class MimicModel(torch.nn.Module):
           bidirectional=self.rnn_bidirectional)
 
       self.rnn_linear = torch.nn.Linear(
-          in_features=self.hidden_size * num_directions, out_features=1)
+          in_features=self.rnn_hidden_size * num_directions, out_features=1)
 
       if self.use_attention:
         self.attention_layer = torch.nn.Linear(
-            in_features=self.hidden_size * num_directions, out_features=1)
+            in_features=self.rnn_hidden_size * num_directions, out_features=1)
 
     if self.model_type == "lr":
       if self.use_attention:
@@ -116,9 +126,10 @@ class MimicModel(torch.nn.Module):
   def _rnn_forward(self, inputs):
     outputs, aux_states = self.rnn_module(inputs)
 
-    if self.bidirectional:
+    if self.rnn_bidirectional:
       (batch_size, sequence_length, _) = list(outputs.size())
-      outputs = outputs.view(batch_size, sequence_length, 2, self.hidden_size)
+      outputs = outputs.view(batch_size, sequence_length, 2,
+                             self.rnn_hidden_size)
       forward_embedding = outputs[:, -1, 0, :]
       backward_embedding = outputs[:, 0, 1, :]
       output_embedding = torch.cat((forward_embedding, backward_embedding),

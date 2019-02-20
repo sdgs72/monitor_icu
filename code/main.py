@@ -67,6 +67,12 @@ flags.DEFINE_boolean("use_attention", False,
                      "Whether to use attention mechanism or not.")
 flags.DEFINE_enum("lr_pooling", "mean", ["mean", "max", "last", "concat"],
                   "Specifies pooling strategies for logistic regression.")
+flags.DEFINE_integer(
+    "save_per_epochs", 10,
+    "Save intermediate checkpoints every few training epochs.")
+# flags.DEFINE_boolean(
+#     "train_embedding", False,
+#     "Whether to train medical events embedding together with the prediction.")
 
 default_decomposer_name = "pca_decomposer.joblib"
 default_standard_scaler_name = "standard_scaler.joblib"
@@ -91,6 +97,7 @@ def train(configs):
       history_window=configs["history_window"],
       prediction_window=configs["prediction_window"],
       dataset_size=FLAGS.train_dataset_size,
+      # pca_dim=None if configs["train_embedding"] else configs["input_size"],
       pca_dim=configs["input_size"],
       pca_decomposer_path=os.path.join(root_dir, default_decomposer_name),
       standardize=configs["standardize"],
@@ -154,6 +161,8 @@ def train(configs):
       start_time = time.time()
       for step, (inputs, labels) in enumerate(train_loader):
 
+        logging.info("Data shape: %s", inputs.shape)
+
         optimizer.zero_grad()
 
         with torch.set_grad_enabled(True):
@@ -176,12 +185,14 @@ def train(configs):
                      (end_time - start_time) * 100 / logits.shape[0]))
           start_time = time.time()
 
-      utilities.update_metrics(metrics, "epoch%d" % (epoch + 1), y_true,
-                               y_score, phase, summary_writer, epoch + 1)
-      logging.info("Saving model checkpoint...")
-      checkpoint_name = os.path.join(root_dir,
-                                     "checkpoint_epoch%03d.model" % (epoch + 1))
-      torch.save(model.state_dict(), checkpoint_name)
+      utilities.update_metrics(y_true, y_score, phase, summary_writer,
+                               epoch + 1)
+
+      if (epoch + 1) % configs["save_per_epochs"] == 0:
+        logging.info("Saving model checkpoint...")
+        checkpoint_name = os.path.join(
+            root_dir, "checkpoint_epoch%03d.model" % (epoch + 1))
+        torch.save(model.state_dict(), checkpoint_name)
 
   except KeyboardInterrupt:
     logging.info("Interruppted. Stop training.")
@@ -193,16 +204,17 @@ def train(configs):
     logging.info("Model saved at %s", checkpoint_name)
   finally:
     logging.info("Training is terminated.")
-    metrics_path = "%s.joblib" % os.path.join(
-        root_dir, "train_metrics_%d_epochs" % len(metrics))
-    joblib.dump(metrics, metrics_path)
 
-    logging.info("Metrics saved at %s.", metrics_path)
+    # metrics_path = "%s.joblib" % os.path.join(
+    #     root_dir, "train_metrics_%d_epochs" % len(metrics))
+    # joblib.dump(metrics, metrics_path)
+    # logging.info("Metrics saved at %s.", metrics_path)
   return
 
 
 def inference(configs):
   root_dir = os.path.join(FLAGS.checkpoint_dir, FLAGS.experiment_name)
+  phase = "evaluation"
 
   for i, x in enumerate(sys.argv):
     logging.info("%d: %s", i, x)
@@ -215,6 +227,7 @@ def inference(configs):
       history_window=configs["history_window"],
       prediction_window=configs["prediction_window"],
       dataset_size=FLAGS.eval_dataset_size,
+      # pca_dim=None if configs["train_embedding"] else configs["input_size"],
       pca_dim=configs["input_size"],
       pca_decomposer_path=os.path.join(root_dir, default_decomposer_name),
       standardize=configs["standardize"],
@@ -276,69 +289,20 @@ def inference(configs):
         if (i + 1) % 10 == 0:
           logging.info("Progress: %d / %d", i + 1, len(eval_loader))
 
-      utilities.update_metrics(metrics, checkpoint_name, y_true, y_score)
+      utilities.update_metrics(y_true, y_score, phase, summary_writer,
+                               epoch + 1)
 
   logging.info("Evaluation on %d models complete.", len(model_checkpoints))
-  metrics_path = "%s.joblib" % os.path.join(
-      root_dir, "eval_metrics_%s" % FLAGS.eval_data_split)
-  joblib.dump(metrics, metrics_path)
+  # metrics_path = "%s.joblib" % os.path.join(
+  #     root_dir, "eval_metrics_%s" % FLAGS.eval_data_split)
+  # joblib.dump(metrics, metrics_path)
+  # logging.info("Metrics saved at %s.", metrics_path)
 
   # attention_path = "%s.joblib" % os.path.join(
   #     root_dir, "attention_scores_%s" % FLAGS.eval_data_split)
   # joblib.dump([attention_scores, y_true, y_score], attention_path)
 
-  logging.info("Metrics saved at %s.", metrics_path)
-
   return
-
-
-def save_and_load_flags():
-  root_dir = os.path.join(FLAGS.checkpoint_dir, FLAGS.experiment_name)
-  flag_saving_path = os.path.join(root_dir, "configs.json")
-
-  # Save model configurations
-  if FLAGS.phase == "train" or FLAGS.phase == "pipeline":
-
-    if os.path.isdir(root_dir):
-      raise ValueError(
-          "Target directory already exists. Please change `experiment_name`.")
-
-    os.makedirs(root_dir)
-
-    configs = {
-        "model_type": FLAGS.model_type,
-        "input_size": FLAGS.input_size,
-        "rnn_hidden_size": FLAGS.rnn_hidden_size,
-        "use_attention": FLAGS.use_attention,
-        "rnn_type": FLAGS.rnn_type,
-        "rnn_layers": FLAGS.rnn_layers,
-        "rnn_dropout": FLAGS.rnn_dropout,
-        "rnn_bidirectional": FLAGS.rnn_bidirectional,
-        "standardize": FLAGS.standardize,
-        "block_size": FLAGS.block_size,
-        "history_window": FLAGS.history_window,
-        "prediction_window": FLAGS.prediction_window,
-        "target_label": FLAGS.target_label,
-        "data_dir": FLAGS.data_dir,
-        "lr_pooling": FLAGS.lr_pooling,
-    }
-
-    with open(flag_saving_path, "w") as fp:
-      configs = json.dump(configs, fp, indent=2)
-
-  if not os.path.exists(flag_saving_path):
-    raise AssertionError(
-        "Training model configuration didn't find, please double check "
-        "`checkpoint_dir` and `experiment_name`.")
-
-  with open(flag_saving_path, "r") as fp:
-    configs = json.load(fp)
-
-  logging.info("Saved model parameters:")
-  for i, (key, val) in enumerate(configs.items()):
-    logging.info("%d: %s=%s", i, key, val)
-
-  return configs
 
 
 def pipeline(configs):
@@ -358,6 +322,7 @@ def pipeline(configs):
       history_window=configs["history_window"],
       prediction_window=configs["prediction_window"],
       dataset_size=FLAGS.train_dataset_size,
+      # pca_dim=None if configs["train_embedding"] else configs["input_size"],
       pca_dim=configs["input_size"],
       pca_decomposer_path=os.path.join(root_dir, default_decomposer_name),
       standardize=configs["standardize"],
@@ -379,6 +344,7 @@ def pipeline(configs):
       history_window=configs["history_window"],
       prediction_window=configs["prediction_window"],
       dataset_size=FLAGS.eval_dataset_size,
+      # pca_dim=None if configs["train_embedding"] else configs["input_size"],
       pca_dim=configs["input_size"],
       pca_decomposer_path=os.path.join(root_dir, default_decomposer_name),
       standardize=configs["standardize"],
@@ -424,8 +390,8 @@ def pipeline(configs):
   scheduler = torch.optim.lr_scheduler.StepLR(
       optimizer, step_size=FLAGS.num_epochs // 5, gamma=0.3)
 
-  train_metrics = {}
-  eval_metrics = {}
+  # train_metrics = {}
+  # eval_metrics = {}
   summary_writer = SummaryWriter(log_dir=root_dir)
 
   try:
@@ -464,12 +430,15 @@ def pipeline(configs):
                      (end_time - start_time) * 100 / logits.shape[0]))
           start_time = time.time()
 
-      utilities.update_metrics(train_metrics, "epoch%d" % (epoch + 1), y_true,
-                               y_score, phase, summary_writer, epoch + 1)
+      utilities.update_metrics(y_true, y_score, phase, summary_writer,
+                               epoch + 1)
 
       checkpoint_name = os.path.join(root_dir,
                                      "checkpoint_epoch%03d.model" % (epoch + 1))
-      torch.save(model.state_dict(), checkpoint_name)
+
+      if (epoch + 1) % configs["save_per_epochs"] == 0:
+        logging.info("Saving model checkpoint...")
+        torch.save(model.state_dict(), checkpoint_name)
 
       phase = "evaluation"
       model.eval()
@@ -486,8 +455,8 @@ def pipeline(configs):
           if (i + 1) % 10 == 0:
             logging.info("Progress: %d / %d", i + 1, len(eval_loader))
 
-        utilities.update_metrics(eval_metrics, checkpoint_name, y_true, y_score,
-                                 phase, summary_writer, epoch + 1)
+        utilities.update_metrics(y_true, y_score, phase, summary_writer,
+                                 epoch + 1)
 
   except KeyboardInterrupt:
     logging.info("Interruppted. Stop training.")
@@ -499,17 +468,68 @@ def pipeline(configs):
     logging.info("Model saved at %s", checkpoint_name)
 
   finally:
-    logging.info("Saving metrics...")
-    metrics_path = "%s.joblib" % os.path.join(
-        root_dir, "train_metrics_%d_epochs" % len(train_metrics))
-    joblib.dump(train_metrics, metrics_path)
+    logging.info("Train/Eval completed.")
+    #   logging.info("Saving metrics...")
+    #   metrics_path = "%s.joblib" % os.path.join(
+    #       root_dir, "train_metrics_%d_epochs" % len(train_metrics))
+    #   joblib.dump(train_metrics, metrics_path)
 
-    metrics_path = "%s.joblib" % os.path.join(
-        root_dir, "eval_metrics_%s_%d_epochs" %
-        (FLAGS.eval_data_split, len(eval_metrics)))
-    joblib.dump(eval_metrics, metrics_path)
-    logging.info("Metrics saved.")
+    #   metrics_path = "%s.joblib" % os.path.join(
+    #       root_dir, "eval_metrics_%s_%d_epochs" %
+    #       (FLAGS.eval_data_split, len(eval_metrics)))
+    #   joblib.dump(eval_metrics, metrics_path)
   return
+
+
+def save_and_load_flags():
+  root_dir = os.path.join(FLAGS.checkpoint_dir, FLAGS.experiment_name)
+  flag_saving_path = os.path.join(root_dir, "configs.json")
+
+  # Save model configurations
+  if FLAGS.phase == "train" or FLAGS.phase == "pipeline":
+
+    if os.path.isdir(root_dir):
+      raise ValueError(
+          "Target directory already exists. Please change `experiment_name`.")
+
+    os.makedirs(root_dir)
+
+    configs = {
+        "model_type": FLAGS.model_type,
+        "input_size": FLAGS.input_size,
+        "rnn_hidden_size": FLAGS.rnn_hidden_size,
+        "use_attention": FLAGS.use_attention,
+        "rnn_type": FLAGS.rnn_type,
+        "rnn_layers": FLAGS.rnn_layers,
+        "rnn_dropout": FLAGS.rnn_dropout,
+        "rnn_bidirectional": FLAGS.rnn_bidirectional,
+        "standardize": FLAGS.standardize,
+        "block_size": FLAGS.block_size,
+        "history_window": FLAGS.history_window,
+        "prediction_window": FLAGS.prediction_window,
+        "target_label": FLAGS.target_label,
+        "data_dir": FLAGS.data_dir,
+        "lr_pooling": FLAGS.lr_pooling,
+        "save_per_epochs": FLAGS.save_per_epochs,
+        # "train_embedding": FLAGS.train_embedding,
+    }
+
+    with open(flag_saving_path, "w") as fp:
+      configs = json.dump(configs, fp, indent=2)
+
+  if not os.path.exists(flag_saving_path):
+    raise AssertionError(
+        "Training model configuration didn't find, please double check "
+        "`checkpoint_dir` and `experiment_name`.")
+
+  with open(flag_saving_path, "r") as fp:
+    configs = json.load(fp)
+
+  logging.info("Saved model parameters:")
+  for i, (key, val) in enumerate(configs.items()):
+    logging.info("%d: %s=%s", i, key, val)
+
+  return configs
 
 
 def main(unused_argv):

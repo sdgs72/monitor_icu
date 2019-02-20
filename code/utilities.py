@@ -13,8 +13,7 @@ def sigmoid(x):
   return np.exp(-np.logaddexp(0, -x))
 
 
-def update_metrics(metrics_dict, name, y_true, y_score, phase, summary_writer,
-                   step):
+def update_metrics(y_true, y_score, phase, summary_writer, step):
   y_true = np.concatenate(y_true, axis=None)
   y_score = np.concatenate(y_score, axis=None)
   y_pred = y_score > 0.5
@@ -38,17 +37,16 @@ def update_metrics(metrics_dict, name, y_true, y_score, phase, summary_writer,
   pr_curve = sklearn.metrics.precision_recall_curve(
       y_true=y_true, probas_pred=sigmoid(y_score))
 
-  metrics_dict[name] = {
-      "total": total,
-      "corrects": corrects,
-      "accuracy": accuracy,
-      "f1": f1,
-      "roc_auc": roc_auc,
-      "ap": ap,
-      "pr_curve": pr_curve,
-  }
+  # metrics_dict[name] = {
+  #     "total": total,
+  #     "corrects": corrects,
+  #     "accuracy": accuracy,
+  #     "f1": f1,
+  #     "roc_auc": roc_auc,
+  #     "ap": ap,
+  #     "pr_curve": pr_curve,
+  # }
 
-  logging.info("Name: %s", name)
   logging.info("Total: %d", total)
   logging.info("Correct: %d", corrects)
   logging.info("Accuracy: %.4f", accuracy)
