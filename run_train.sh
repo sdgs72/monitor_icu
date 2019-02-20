@@ -8,6 +8,10 @@ EXPERIMENT="${TARGET}_trial"
 DATA_DIR="./data"
 LOG_DIR="./logs"
 
+rm -rf ${LOG_DIR}
+
+rm -rf "./experiments"
+
 mkdir -p ${LOG_DIR}
 
 python code/main.py \
@@ -21,13 +25,13 @@ python code/main.py \
   --rnn_hidden_size=256 \
   --num_epochs=5 \
   --learning_rate=1e-2 \
-  --data_split="train" \
+  --train_data_split="train" \
   --data_dir="${DATA_DIR}" \
   --target_label="${TARGET}" \
   --block_size=6 \
   --history_window=8 \
   --prediction_window=2 \
-  --dataset_size=0 \
+  --train_dataset_size=0 \
   --rnn_layers=1 \
   --rnn_dropout=0 \
   --standardize \
