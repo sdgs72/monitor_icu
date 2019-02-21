@@ -3,7 +3,7 @@
 set -x
 
 TARGET="death"
-EXPERIMENT="exp_5_c"
+EXPERIMENT="exp_5_d"
 
 DATA_DIR="./data"
 LOG_DIR="./logs"
@@ -14,7 +14,7 @@ python code/main.py \
   --phase="pipeline" \
   --model_type="rnn" \
   --rnn_type="lstm" \
-  --nornn_bidirectional \
+  --rnn_bidirectional \
   --nouse_attention \
   --batch_size=128 \
   --input_size=256 \
