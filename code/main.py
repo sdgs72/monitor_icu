@@ -79,6 +79,7 @@ default_standard_scaler_name = "standard_scaler.joblib"
 
 def train(configs):
   root_dir = os.path.join(FLAGS.checkpoint_dir, FLAGS.experiment_name)
+  phase = "training"
 
   with open(os.path.join(root_dir, "running_configs.cfg"), "w") as fp:
     fp.write("python ")

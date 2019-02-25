@@ -11,7 +11,7 @@ from scipy.sparse import csr_matrix
 VOC_SIZE = 4010  # Original 4006 Events + AKI 0~3 = 4010 In total
 WINDOW_LENGTH = 1  # 1 hour per block
 SPLIT_DIR = "../data"
-RAW_DATA = "/afs/cs.pitt.edu/usr0/miz44/mimic_project/raw_data/MIMIC_FULL_BATCH.csv"
+RAW_DATA = SPLIT_DIR + "/raw_data/MIMIC_FULL_BATCH.csv"
 VOCABULARY_FILE = "../data/events_vocabulary.csv"
 HADM_INFO_FILE = "../data/hadm_infos.csv"
 

@@ -8,6 +8,10 @@ EXPERIMENT="debug1"
 DATA_DIR="./data"
 LOG_DIR="./debug/logs"
 
+rm -rf ${LOG_DIR}
+
+rm -rf "./experiments"
+
 mkdir -p ${LOG_DIR}
 
 python code/main.py \
