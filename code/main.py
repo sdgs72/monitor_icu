@@ -70,9 +70,8 @@ flags.DEFINE_enum("lr_pooling", "mean", ["mean", "max", "last", "concat"],
 flags.DEFINE_integer(
     "save_per_epochs", 10,
     "Save intermediate checkpoints every few training epochs.")
-# flags.DEFINE_boolean(
-#     "train_embedding", False,
-#     "Whether to train medical events embedding together with the prediction.")
+flags.DEFINE_string("eval_checkpoint", None,
+                    "Specifies a checkpoint for inference.")
 
 default_decomposer_name = "pca_decomposer.joblib"
 default_standard_scaler_name = "standard_scaler.joblib"
@@ -153,12 +152,16 @@ def train(configs):
   try:
     for epoch in range(FLAGS.num_epochs):
       scheduler.step()
+
+      summary_writer.add_scalar("learning_rate",
+                                scheduler.get_lr()[0], epoch + 1)
+
       # Resample training dataset.
       train_dataset.resample()
       y_true, y_score = [], []
 
       start_time = time.time()
-      for step, (inputs, labels) in enumerate(train_loader):
+      for step, (inputs, labels, _) in enumerate(train_loader):
 
         logging.info("Data shape: %s", inputs.shape)
 
@@ -254,33 +257,43 @@ def inference(configs):
       lr_history_window=configs["history_window"],
   )
 
-  model_checkpoints = [
-      x for x in os.listdir(root_dir)
-      if x.endswith(".model") and "step" not in x
-  ]
-  logging.info("Total number of checkpoints: %d", len(model_checkpoints))
-  for i, x in enumerate(model_checkpoints):
-    logging.info("%d: %s", i, x)
+  if FLAGS.eval_checkpoint:
+    logging.info("Evaluate checkpoint %s", FLAGS.eval_checkpoint)
+    model_checkpoints = [FLAGS.eval_checkpoint]
+  else:
+    model_checkpoints = [
+        os.path.join(root_dir, x)
+        for x in os.listdir(root_dir)
+        if x.endswith(".model") and "step" not in x
+    ]
+    logging.info("Total number of checkpoints: %d", len(model_checkpoints))
+    for i, x in enumerate(model_checkpoints):
+      logging.info("%d: %s", i, x)
 
-  metrics = {}
-  for checkpoint_name in model_checkpoints:
-    checkpoint_path = os.path.join(root_dir, checkpoint_name)
-
+  for checkpoint_path in model_checkpoints:
     model.load_state_dict(torch.load(checkpoint_path))
     logging.info("Load model from: %s", checkpoint_path)
+
+    prediction = utilities.Prediction(
+        block_size=configs["block_size"],
+        history_window=configs["history_window"],
+        prediction_window=configs["prediction_window"])
 
     model.eval()
 
     logging.info("Initializatoin complete. Start inference.")
 
     y_true, y_score = [], []
-    # attention_scores = []
     with torch.set_grad_enabled(False):
-      for i, (inputs, labels) in enumerate(eval_loader):
+      for i, (inputs, labels, data_info) in enumerate(eval_loader):
         logits, endpoints = model(inputs)
 
-        # if "attention_score" in endpoints:
-        #   attention_scores.append(endpoints["attention_score"].numpy())
+        if "attention_score" in endpoints:
+          attention_score = endpoints["attention_score"]
+        else:
+          attention_score = None
+
+        prediction.add_prediction(data_info, logits, labels, attention_score)
 
         y_true.append(labels.numpy())
         y_score.append(logits.numpy())
@@ -288,18 +301,12 @@ def inference(configs):
         if (i + 1) % 10 == 0:
           logging.info("Progress: %d / %d", i + 1, len(eval_loader))
 
-      utilities.update_metrics(y_true, y_score, phase, summary_writer,
-                               epoch + 1)
+      utilities.update_metrics(y_true, y_score, phase)
 
+    prediction.write_to_csv(
+        checkpoint_path.replace(".model",
+                                "_eval_on_%s.csv" % FLAGS.eval_data_split))
   logging.info("Evaluation on %d models complete.", len(model_checkpoints))
-  # metrics_path = "%s.joblib" % os.path.join(
-  #     root_dir, "eval_metrics_%s" % FLAGS.eval_data_split)
-  # joblib.dump(metrics, metrics_path)
-  # logging.info("Metrics saved at %s.", metrics_path)
-
-  # attention_path = "%s.joblib" % os.path.join(
-  #     root_dir, "attention_scores_%s" % FLAGS.eval_data_split)
-  # joblib.dump([attention_scores, y_true, y_score], attention_path)
 
   return
 
@@ -389,8 +396,9 @@ def pipeline(configs):
   scheduler = torch.optim.lr_scheduler.StepLR(
       optimizer, step_size=FLAGS.num_epochs // 5, gamma=0.3)
 
-  # train_metrics = {}
-  # eval_metrics = {}
+  best_accuracy = None
+  best_checkpoint_name = os.path.join(root_dir, "checkpoint_best_val_acc.model")
+
   summary_writer = SummaryWriter(log_dir=root_dir)
 
   try:
@@ -400,12 +408,15 @@ def pipeline(configs):
       model.train()
 
       scheduler.step()
+      summary_writer.add_scalar("learning_rate",
+                                scheduler.get_lr()[0], epoch + 1)
+
       # Resample training dataset.
       train_dataset.resample()
       y_true, y_score = [], []
 
       start_time = time.time()
-      for step, (inputs, labels) in enumerate(train_loader):
+      for step, (inputs, labels, _) in enumerate(train_loader):
 
         optimizer.zero_grad()
 
@@ -445,7 +456,7 @@ def pipeline(configs):
 
       y_true, y_score = [], []
       with torch.set_grad_enabled(False):
-        for i, (inputs, labels) in enumerate(eval_loader):
+        for i, (inputs, labels, _) in enumerate(eval_loader):
           logits, endpoints = model(inputs)
 
           y_true.append(labels.numpy())
@@ -454,8 +465,12 @@ def pipeline(configs):
           if (i + 1) % 10 == 0:
             logging.info("Progress: %d / %d", i + 1, len(eval_loader))
 
-        utilities.update_metrics(y_true, y_score, phase, summary_writer,
-                                 epoch + 1)
+      accuracy, f1, roc_auc, ap = utilities.update_metrics(
+          y_true, y_score, phase, summary_writer, epoch + 1)
+
+      if best_accuracy is None or accuracy >= best_accuracy:
+        torch.save(model.state_dict(), best_checkpoint_name)
+        best_accuracy = accuracy
 
   except KeyboardInterrupt:
     logging.info("Interruppted. Stop training.")
@@ -468,15 +483,7 @@ def pipeline(configs):
 
   finally:
     logging.info("Train/Eval completed.")
-    #   logging.info("Saving metrics...")
-    #   metrics_path = "%s.joblib" % os.path.join(
-    #       root_dir, "train_metrics_%d_epochs" % len(train_metrics))
-    #   joblib.dump(train_metrics, metrics_path)
 
-    #   metrics_path = "%s.joblib" % os.path.join(
-    #       root_dir, "eval_metrics_%s_%d_epochs" %
-    #       (FLAGS.eval_data_split, len(eval_metrics)))
-    #   joblib.dump(eval_metrics, metrics_path)
   return
 
 
@@ -510,7 +517,6 @@ def save_and_load_flags():
         "data_dir": FLAGS.data_dir,
         "lr_pooling": FLAGS.lr_pooling,
         "save_per_epochs": FLAGS.save_per_epochs,
-        # "train_embedding": FLAGS.train_embedding,
     }
 
     with open(flag_saving_path, "w") as fp:

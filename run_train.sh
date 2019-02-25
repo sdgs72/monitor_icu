@@ -3,7 +3,7 @@
 set -x
 
 TARGET="death"
-EXPERIMENT="debug"
+EXPERIMENT="debug1"
 
 DATA_DIR="./data"
 LOG_DIR="./debug/logs"
@@ -12,10 +12,10 @@ mkdir -p ${LOG_DIR}
 
 python code/main.py \
   --phase="pipeline" \
-  --model_type="rnn" \
+  --model_type="lr" \
   --rnn_type="lstm" \
   --nornn_bidirectional \
-  --nouse_attention \
+  --use_attention \
   --batch_size=128 \
   --input_size=256 \
   --rnn_hidden_size=256 \

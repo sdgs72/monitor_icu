@@ -3,19 +3,19 @@
 set -x
 
 TARGET="death"
-EXPERIMENT="debug"
+EXPERIMENT="debug1"
 
 DATA_DIR="./data"
-LOG_DIR="./logs"
+LOG_DIR="./debug"
 
 mkdir -p ${LOG_DIR}
 
 python code/main.py \
   --phase="pipeline" \
-  --model_type="rnn" \
+  --model_type="lr" \
   --rnn_type="lstm" \
   --rnn_bidirectional \
-  --nouse_attention \
+  --use_attention \
   --batch_size=128 \
   --input_size=256 \
   --rnn_hidden_size=256 \
@@ -25,7 +25,7 @@ python code/main.py \
   --eval_data_split="val" \
   --data_dir="${DATA_DIR}" \
   --target_label="${TARGET}" \
-  --block_size=6 \
+  --block_size=12 \
   --history_window=28 \
   --prediction_window=2 \
   --train_dataset_size=0 \
@@ -33,7 +33,8 @@ python code/main.py \
   --rnn_layers=1 \
   --rnn_dropout=0 \
   --standardize \
-  --checkpoint_dir="./experiments" \
+  --save_per_epochs=10 \
+  --checkpoint_dir="./debug" \
   --experiment_name="${EXPERIMENT}" >> ${LOG_DIR}/${EXPERIMENT}_train.log 2>&1 &
 
 
