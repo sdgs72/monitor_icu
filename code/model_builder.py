@@ -141,7 +141,7 @@ class MimicModel(torch.nn.Module):
 
     endpoints = {"aux_states": aux_states}
 
-    return logits, None
+    return logits, endpoints
 
   def _attentional_rnn_forward(self, inputs):
     outputs, aux_states = self.rnn_module(inputs)

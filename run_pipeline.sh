@@ -3,16 +3,16 @@
 set -x
 
 TARGET="death"
-EXPERIMENT="exp_5_d"
+EXPERIMENT="debug1"
 
 DATA_DIR="./data"
-LOG_DIR="./logs"
+LOG_DIR="./debug"
 
 mkdir -p ${LOG_DIR}
 
 python code/main.py \
   --phase="pipeline" \
-  --model_type="rnn" \
+  --model_type="lr" \
   --rnn_type="lstm" \
   --rnn_bidirectional \
   --nouse_attention \
@@ -33,7 +33,6 @@ python code/main.py \
   --rnn_layers=1 \
   --rnn_dropout=0 \
   --standardize \
-  --checkpoint_dir="./experiments" \
+  --save_per_epochs=10 \
+  --checkpoint_dir="./debug" \
   --experiment_name="${EXPERIMENT}" >> ${LOG_DIR}/${EXPERIMENT}_train.log 2>&1 &
-
-
