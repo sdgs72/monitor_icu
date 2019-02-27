@@ -152,6 +152,8 @@ class MimicModel(torch.nn.Module):
     output_embedding = torch.sum(attention_score * outputs, dim=1)
     logits = self.rnn_linear(output_embedding).squeeze(1)
 
+    print(attention_score*outputs)
+
     endpoints = {
         "attention_scores": attention_score,
         "aux_states": aux_states,

@@ -85,7 +85,7 @@ if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
         raise ValueError("Unknown data split.")
 
       hadm_length[x] = max(0 if x not in discharge_time else discharge_time[x],
-                           0 if x not in death_time else death_time[x]),
+                           0 if x not in death_time else death_time[x])
 
       if hadm_length[x] == 0:
         raise AssertionError("Zero length admission: %s" % x)
