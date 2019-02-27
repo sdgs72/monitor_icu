@@ -3,11 +3,7 @@
 set -x
 
 TARGET="death"
-<<<<<<< HEAD
 EXPERIMENT="exp_test"
-=======
-EXPERIMENT="debug1"
->>>>>>> 819ad6bd87d8ff9113be66e13cdd909549344c96
 
 DATA_DIR="./data"
 LOG_DIR="./debug"
@@ -19,11 +15,7 @@ python3 code/main.py \
   --model_type="lr" \
   --rnn_type="lstm" \
   --rnn_bidirectional \
-<<<<<<< HEAD
   --use_attention \
-=======
-  --nouse_attention \
->>>>>>> 819ad6bd87d8ff9113be66e13cdd909549344c96
   --batch_size=128 \
   --input_size=256 \
   --rnn_hidden_size=256 \
