@@ -87,8 +87,8 @@ class MimicDataset(torch.utils.data.Dataset):
     return len(self.sample_list)
 
   def __getitem__(self, idx):
-    hadm_id, (start_day, end_day), label = self.sample_list[idx]
-    data = self.data[hadm_id][start_day:end_day, :]
+    hadm_id, (start_time, end_time), label = self.sample_list[idx]
+    data = self.data[hadm_id][start_time:end_time, :]
 
     if self.pca_dim:
       data = self.decomposer.transform(data)
@@ -96,7 +96,8 @@ class MimicDataset(torch.utils.data.Dataset):
       if self.standardize:
         data = self.standard_scaler.transform(data)
 
-    return data.astype(np.float32), label
+    return (data.astype(np.float32), label, (int(hadm_id), start_time,
+                                             end_time))
 
   def _aggregate_raw_data(self):
 
@@ -136,7 +137,8 @@ class MimicDataset(torch.utils.data.Dataset):
     # aggregated_data = np.concatenate(list(self.data.values()), axis=0)
     aggregated_data = np.stack([np.sum(x, axis=0) for x in self.data.values()],
                                axis=0)
-    logging.info("Feature shape for PCA: %s", aggregated_data.shape)
+    logging.info("Feature dimension before PCA: %d", aggregated_data.shape[1])
+    logging.info("Target dimension after PCA: %d", self.pca_dim)
 
     if self.phase == "training":
       decomposer = PCA(n_components=self.pca_dim)

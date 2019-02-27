@@ -3,19 +3,27 @@
 set -x
 
 TARGET="death"
+<<<<<<< HEAD
 EXPERIMENT="exp_test"
+=======
+EXPERIMENT="debug1"
+>>>>>>> 819ad6bd87d8ff9113be66e13cdd909549344c96
 
 DATA_DIR="./data"
-LOG_DIR="./logs"
+LOG_DIR="./debug"
 
 mkdir -p ${LOG_DIR}
 
 python3 code/main.py \
   --phase="pipeline" \
-  --model_type="rnn" \
+  --model_type="lr" \
   --rnn_type="lstm" \
   --rnn_bidirectional \
+<<<<<<< HEAD
   --use_attention \
+=======
+  --nouse_attention \
+>>>>>>> 819ad6bd87d8ff9113be66e13cdd909549344c96
   --batch_size=128 \
   --input_size=256 \
   --rnn_hidden_size=256 \
@@ -33,7 +41,6 @@ python3 code/main.py \
   --rnn_layers=1 \
   --rnn_dropout=0 \
   --standardize \
-  --checkpoint_dir="./experiments" \
+  --save_per_epochs=10 \
+  --checkpoint_dir="./debug" \
   --experiment_name="${EXPERIMENT}" >> ${LOG_DIR}/${EXPERIMENT}_train.log 2>&1 &
-
-

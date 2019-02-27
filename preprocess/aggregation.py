@@ -169,10 +169,10 @@ with open(RAW_DATA, "r") as fp:
   target[hadm_id] = csr_matrix(record)
 
 print("Saving train.")
-np.save("../data/train_interval1_data", output["train"])
+np.save("../data/train_interval%d_data" % WINDOW_LENGTH, output["train"])
 
 print("Saving test.")
-np.save("../data/test_interval1_data", output["test"])
+np.save("../data/test_interval%d_data" % WINDOW_LENGTH, output["test"])
 
 print("Saving val.")
-np.save("../data/val_interval1_data", output["val"])
+np.save("../data/val_interval%d_data" % WINDOW_LENGTH, output["val"])

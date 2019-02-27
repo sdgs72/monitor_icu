@@ -2,25 +2,18 @@
 
 set -x
 
-EXPERIMENT="death_trial"
+EXPERIMENT="debug1"
 
 DATA_DIR="./data"
-LOG_DIR="./logs"
+LOG_DIR="./debug"
 
 mkdir -p ${LOG_DIR}
 
 python code/main.py \
   --phase=inference \
   --batch_size=128 \
-  --eval_data_split="val" \
-  --eval_dataset_size=0 \
-  --checkpoint_dir="./experiments" \
-  --experiment_name="${EXPERIMENT}" >> ${LOG_DIR}/${EXPERIMENT}_val.log 2>&1 &
-
-python code/main.py \
-  --phase=inference \
-  --batch_size=128 \
   --eval_data_split="test" \
   --eval_dataset_size=0 \
-  --checkpoint_dir="./experiments" \
+  --eval_checkpoint="debug/debug1/checkpoint_best_val_acc.model" \
+  --checkpoint_dir="./debug" \
   --experiment_name="${EXPERIMENT}" >> ${LOG_DIR}/${EXPERIMENT}_test.log 2>&1 &
