@@ -7,7 +7,7 @@ EXPERIMENT="exp_2_h"
 
 DATA_DIR="./data"
 LOG_DIR="./logs"
-:
+
 mkdir -p ${LOG_DIR}
 
 python3 code/main.py \
@@ -18,7 +18,7 @@ python3 code/main.py \
   --use_attention \
   --batch_size=128 \
   --input_size=256 \
-  --rnn_hidden_size=128 \
+  --rnn_hidden_size=256 \
   --num_epochs=50 \
   --learning_rate=1e-3 \
   --train_data_split="train" \
