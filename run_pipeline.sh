@@ -3,7 +3,7 @@
 set -x
 
 TARGET="death"
-EXPERIMENT="exp_test"
+EXPERIMENT="cexp_2_a"
 
 DATA_DIR="./data"
 LOG_DIR="./debug"
@@ -15,21 +15,21 @@ python3 code/main.py \
   --model_type="lr" \
   --rnn_type="lstm" \
   --rnn_bidirectional \
-  --use_attention \
+  --nouse_attention \
   --batch_size=128 \
   --input_size=256 \
   --rnn_hidden_size=256 \
-  --num_epochs=50 \
+  --num_epochs=25 \
   --learning_rate=1e-3 \
   --train_data_split="train" \
   --eval_data_split="val" \
   --data_dir="${DATA_DIR}" \
   --target_label="${TARGET}" \
-  --block_size=3 \
+  --block_size=6 \
   --history_window=56 \
-  --prediction_window=2 \
+  --prediction_window=4 \
   --train_dataset_size=0 \
-  --eval_dataset_size=0 \
+  --eval_dataset_size=-1 \
   --rnn_layers=1 \
   --rnn_dropout=0 \
   --standardize \
