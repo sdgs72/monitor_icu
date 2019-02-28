@@ -4,3 +4,5 @@ experiments/
 analysis/
 logs/
 raw data/
+code/__pycache__/
+experiments/.DS_Store

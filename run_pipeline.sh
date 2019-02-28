@@ -10,12 +10,12 @@ LOG_DIR="./logs"
 :
 mkdir -p ${LOG_DIR}
 
-python code/main.py \
+python3 code/main.py \
   --phase="pipeline" \
   --model_type="rnn" \
   --rnn_type="lstm" \
   --rnn_bidirectional \
-  --nouse_attention \
+  --use_attention \
   --batch_size=128 \
   --input_size=256 \
   --rnn_hidden_size=128 \
