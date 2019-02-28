@@ -3,21 +3,20 @@
 set -x
 
 TARGET="death"
-EXPERIMENT="unidirectional_noatt"
+EXPERIMENT="exp_test"
 
 DATA_DIR="./data"
 LOG_DIR="./logs"
 
 mkdir -p ${LOG_DIR}
 
-python code/main.py \
+python3 code/main.py \
   --phase="pipeline" \
   --model_type="rnn" \
   --rnn_type="lstm" \
-  --nornn_bidirectional \
-  --nouse_attention \
-  --batch_size=1024 \
-  --input_size=256 \
+  --rnn_bidirectional \
+  --use_attention \
+  --batch_size=128 \
   --rnn_hidden_size=256 \
   --num_epochs=50 \
   --learning_rate=1e-3 \
@@ -25,9 +24,9 @@ python code/main.py \
   --eval_data_split="val" \
   --data_dir="${DATA_DIR}" \
   --target_label="${TARGET}" \
-  --block_size=6 \
+  --block_size=3 \
   --history_window=56 \
-  --prediction_window=8 \
+  --prediction_window=2 \
   --train_dataset_size=0 \
   --eval_dataset_size=0 \
   --rnn_layers=1 \

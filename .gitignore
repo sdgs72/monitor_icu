@@ -2,3 +2,5 @@ __pycache__/
 
 .idea/
 data/
+code/__pycache__/
+experiments/.DS_Store

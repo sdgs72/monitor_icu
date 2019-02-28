@@ -76,8 +76,9 @@ class MimicDataset(torch.utils.data.Dataset):
     self.labels, self.durations = self._load_labels()
 
     self.data = self._aggregate_raw_data()
+    self.negatives, self.positives = self._generate_candidates()
 
-    self.resample()
+    self.sample_list = self.resample()
 
     if self.pca_dim:
       self.decomposer, self.standard_scaler = self._preprocessing()
@@ -127,9 +128,8 @@ class MimicDataset(torch.utils.data.Dataset):
 
   def resample(self):
     logging.info("Resample dataset...")
-    self.sample_list = self._sample_data()
     logging.info("Resample dataset completed!")
-    return
+    return self._sample_data()
 
   def _preprocessing(self):
     decomposer, standard_scaler = None, None
@@ -196,28 +196,26 @@ class MimicDataset(torch.utils.data.Dataset):
     return full_negatives, full_positives
 
   def _sample_data(self):
-    negatives, positives = self._generate_candidates()
-
     if self.dataset_size == -1:
       logging.info("Using all possible candidates without sampling.")
       logging.warn(
           "WARN: The dataset might be extremely unbalanced and should be used in inference only."
       )
-      return negatives + positives
+      return self.negatives + self.positives
 
     elif self.dataset_size == 0:
       self.dataset_size = len(positives) * 2
-      logging.info("Dataset use default size: %d", len(positives) * 2)
-      logging.info("  Use all %d positive samples", len(positives))
+      logging.info("Dataset use default size: %d", len(self.positives) * 2)
+      logging.info("  Use all %d positive samples", len(self.positives))
       logging.info("  Randomly choose %d negative samples from %d candidates",
-                   len(positives), len(negatives))
+                   len(self.positives), len(self.negatives))
 
-      return random.choices(negatives, k=len(positives)) + positives
+      return random.choices(self.negatives, k=len(self.positives)) + self.positives
 
     else:
-      sample_list = random.choices(negatives, k=self.dataset_size // 2)
+      sample_list = random.choices(self.negatives, k=self.dataset_size // 2)
       sample_list += random.choices(
-          positives, k=self.dataset_size - self.dataset_size // 2)
+          self.positives, k=self.dataset_size - self.dataset_size // 2)
 
       return sample_list
 
