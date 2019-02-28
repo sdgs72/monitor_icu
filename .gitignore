@@ -9,3 +9,6 @@ raw data/
 code/__pycache__/
 experiments/
 .DS_Store
+run_eval.sh
+run_pipeline.sh
+run_train.sh
