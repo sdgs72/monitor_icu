@@ -16,7 +16,7 @@ def sigmoid(x):
 def update_metrics(y_true, y_score, phase, summary_writer=None, step=0):
   y_true = np.concatenate(y_true, axis=None)
   y_score = np.concatenate(y_score, axis=None)
-  y_pred = y_score > 0.5
+  y_pred = y_score > 0
 
   logging.info("=" * 50)
   total = y_true.shape[0]
