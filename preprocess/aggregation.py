@@ -87,17 +87,16 @@ if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
       hadm_length[x] = max(0 if x not in discharge_time else discharge_time[x],
                            0 if x not in death_time else death_time[x])
 
-      if hadm_length[x] == 0:
-        raise AssertionError("Zero length admission: %s" % x)
-
-      writer.writerow([
-          x,
-          "%d" % hadm_length[x],
-          "%d" % (discharge_time[x] if x in discharge_time else -1),
-          "%d" % (death_time[x] if x in death_time else -1),
-          "%d" % (sepsis_time[x] if x in sepsis_time else -1),
-          x_split,
-      ])
+      if hadm_length[x] != 0:
+        # raise AssertionError("Zero length admission: %s" % x)
+        writer.writerow([
+            x,
+            "%d" % hadm_length[x],
+            "%d" % (discharge_time[x] if x in discharge_time else -1),
+            "%d" % (death_time[x] if x in death_time else -1),
+            "%d" % (sepsis_time[x] if x in sepsis_time else -1),
+            x_split,
+        ])
 
 events_vocabulary = {}
 events_dict = {}

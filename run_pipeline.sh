@@ -19,7 +19,7 @@ python3 code/main.py \
   --batch_size=128 \
   --input_size=256 \
   --rnn_hidden_size=256 \
-  --num_epochs=50 \
+  --num_epochs=25 \
   --learning_rate=1e-3 \
   --train_data_split="train" \
   --eval_data_split="val" \
@@ -29,7 +29,7 @@ python3 code/main.py \
   --history_window=56 \
   --prediction_window=4 \
   --train_dataset_size=0 \
-  --eval_dataset_size=0 \
+  --eval_dataset_size=-1 \
   --rnn_layers=1 \
   --rnn_dropout=0 \
   --standardize \
