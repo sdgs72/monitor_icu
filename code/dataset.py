@@ -204,7 +204,7 @@ class MimicDataset(torch.utils.data.Dataset):
       return self.negatives + self.positives
 
     elif self.dataset_size == 0:
-      self.dataset_size = len(positives) * 2
+      self.dataset_size = len(self.positives) * 2
       logging.info("Dataset use default size: %d", len(self.positives) * 2)
       logging.info("  Use all %d positive samples", len(self.positives))
       logging.info("  Randomly choose %d negative samples from %d candidates",
