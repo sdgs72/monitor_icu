@@ -147,7 +147,6 @@ def train(configs):
   scheduler = torch.optim.lr_scheduler.StepLR(
       optimizer, step_size=FLAGS.num_epochs // 5, gamma=0.3)
 
-  metrics = {}
   summary_writer = SummaryWriter(log_dir=root_dir)
 
   logging.info("Initializatoin complete. Start training.")
@@ -209,10 +208,6 @@ def train(configs):
   finally:
     logging.info("Training is terminated.")
 
-    # metrics_path = "%s.joblib" % os.path.join(
-    #     root_dir, "train_metrics_%d_epochs" % len(metrics))
-    # joblib.dump(metrics, metrics_path)
-    # logging.info("Metrics saved at %s.", metrics_path)
   return
 
 
@@ -398,8 +393,16 @@ def pipeline(configs):
   scheduler = torch.optim.lr_scheduler.StepLR(
       optimizer, step_size=FLAGS.num_epochs // 5, gamma=0.3)
 
-  best_accuracy = None
-  best_checkpoint_name = os.path.join(root_dir, "checkpoint_best_val_acc.model")
+  best_metrics = {
+      "accuracy": None,
+      "roc_auc": None,
+      "ap": None,
+      "f1": None,
+      "loss": None
+  }
+  best_checkpoint_name = os.path.join(
+      root_dir, "checkpoint_best_{metric}_on_%s_epoch{epoch:03d}.model"
+  ) % FLAGS.eval_data_split
 
   summary_writer = SummaryWriter(log_dir=root_dir)
 
@@ -460,6 +463,7 @@ def pipeline(configs):
       with torch.set_grad_enabled(False):
         for i, (inputs, labels, _) in enumerate(eval_loader):
           logits, endpoints = model(inputs)
+          loss = criterion(input=logits, target=labels.float())
 
           y_true.append(labels.numpy())
           y_score.append(logits.numpy())
@@ -470,9 +474,29 @@ def pipeline(configs):
       accuracy, f1, roc_auc, ap = utilities.update_metrics(
           y_true, y_score, phase, summary_writer, epoch + 1)
 
-      if best_accuracy is None or accuracy >= best_accuracy:
-        torch.save(model.state_dict(), best_checkpoint_name)
-        best_accuracy = accuracy
+      metrics = {
+          "accuracy": accuracy,
+          "f1": f1,
+          "roc_auc": roc_auc,
+          "ap": ap,
+          "loss": loss
+      }
+
+      for metric_name, metric in zip(*metrics):
+        if (best_metrics[metric_name] is None or
+            metric >= best_metrics[metric_name][0]):
+          if best_metrics[metric_name] is not None:
+            old_checkpoint_name = best_checkpoint_name.format(
+                metric=metric_name, epoch=best_metrics[metric_name][1])
+            if os.path.exists(old_checkpoint_name):
+              os.remove(old_checkpoint_name)
+
+          torch.save(
+              model.state_dict(),
+              best_checkpoint_name.format(metric=metric_name, epoch=epoch + 1))
+          best_metrics[metric_name] = (metric, epoch + 1)
+          logging.info("Saving best model: best %s of %.4f in epoch %d",
+                       metric_name, metric, epoch + 1)
 
   except KeyboardInterrupt:
     logging.info("Interruppted. Stop training.")
