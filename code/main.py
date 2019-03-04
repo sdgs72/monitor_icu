@@ -24,7 +24,7 @@ import utilities
 FLAGS = flags.FLAGS
 
 flags.DEFINE_enum(
-    "phase", "train", ["train", "inference", "pipeline"],
+    "phase", "pipeline", ["train", "inference", "pipeline"],
     "Specifies whether to train a model, run inference on pretrained models, "
     "or perform evaluation on-the-fly together with training.")
 flags.DEFINE_integer("batch_size", 512, "Number of instances in a batch.")
@@ -57,7 +57,7 @@ flags.DEFINE_integer(
 flags.DEFINE_boolean("standardize", True, "Whether to standardize input data.")
 flags.DEFINE_string("checkpoint_dir", "./",
                     "Directory where trained models are stored.")
-flags.DEFINE_string("experiment_name", None, "Identifies the experiments.")
+flags.DEFINE_string("experiment_name", '../experiments/debug', "Identifies the experiments.")
 flags.DEFINE_enum("rnn_type", "gru", ["lstm", "gru"],
                   "Type of RNN modules for experiments.")
 flags.DEFINE_integer("rnn_layers", 1, "Number of layers tacked in RNN modules.")
@@ -482,7 +482,7 @@ def pipeline(configs):
           "loss": loss
       }
 
-      for metric_name, metric in zip(*metrics):
+      for metric_name, metric in metrics.items():
         if (best_metrics[metric_name] is None or
             metric >= best_metrics[metric_name][0]):
           if best_metrics[metric_name] is not None:
