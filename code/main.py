@@ -57,7 +57,7 @@ flags.DEFINE_integer(
 flags.DEFINE_boolean("standardize", True, "Whether to standardize input data.")
 flags.DEFINE_string("checkpoint_dir", "./",
                     "Directory where trained models are stored.")
-flags.DEFINE_string("experiment_name", '../experiments/debug', "Identifies the experiments.")
+flags.DEFINE_string("experiment_name", None, "Identifies the experiments.")
 flags.DEFINE_enum("rnn_type", "gru", ["lstm", "gru"],
                   "Type of RNN modules for experiments.")
 flags.DEFINE_integer("rnn_layers", 1, "Number of layers tacked in RNN modules.")
