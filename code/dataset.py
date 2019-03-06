@@ -183,9 +183,9 @@ class MimicDataset(torch.utils.data.Dataset):
       negatives, positives = [], []
       if label_time < 0:  # all negatives
 
-        # drop the ones with few effective events (these been regarded as abnormal ones)
+        #Mar 6: drop the ones with few effective events (these been regarded as abnormal ones)
         cur_data = self.data[hadm_id]
-        if [1 for each in np.sum(cur_data,axis=1) if each == 0] > cur_data.shape[0]*0.9:
+        if sum([1 for each in np.sum(cur_data,axis=1) if each == 0]) > cur_data.shape[0]*0.9:
           self.dropped_hadm_id.append(hadm_id)
           continue
         #
