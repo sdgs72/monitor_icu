@@ -143,7 +143,8 @@ with open(RAW_DATA, "r") as fp:
           raise ValueError("Unknown data split.")
         target[hadm_id] = csr_matrix(record)
       hadm_id = row["HADM_ID"]
-      record = np.zeros((hadm_length[hadm_id], VOC_SIZE))
+      if hadm_id in hadm_length.keys():
+        record = np.zeros((hadm_length[hadm_id], VOC_SIZE))
 
     key = row["EventType"] + row["ITEMID2"]
     block = int(row["TIME"]) // WINDOW_LENGTH
