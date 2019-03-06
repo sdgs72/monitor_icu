@@ -65,6 +65,7 @@ class MimicDataset(torch.utils.data.Dataset):
     self.standardize = standardize
     self.standard_scaler_path = standard_scaler_path
     self.phase = phase
+    self.upper_bound_each_hadm_id = int(self.prediction_window *1.5)+1
 
     if self.data_split not in ["train", "val", "test"]:
       raise ValueError(
@@ -189,7 +190,10 @@ class MimicDataset(torch.utils.data.Dataset):
             start_time + self.history_window + self.prediction_window)
         label = label_time in prediction_window
         [negatives, positives][label].append((hadm_id, history_window, label))
-
+      # Mar 6: pre-sample the negatives set of this hadm_id to be a set with a size no larger than uppder_bound_each_hadm_id
+      if len(negatives) > self.upper_bound_each_hadm_id:
+        negatives = random.sample(negatives, self.upper_bound_each_hadm_id)
+      #
       full_negatives += negatives
       full_positives += positives
 
