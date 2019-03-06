@@ -1,5 +1,4 @@
 __pycache__/
-
 .idea/
 data/
 experiments/
@@ -12,3 +11,4 @@ experiments/
 run_eval.sh
 run_pipeline.sh
 run_train.sh
+run_tensorboard.sh
