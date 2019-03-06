@@ -3,12 +3,8 @@
 set -x
 
 TARGET="death"
-<<<<<<< HEAD:run_pipeline.sh
-EXPERIMENT="exp_2_j"
-=======
 
 EXPERIMENT="exp_2_h"
->>>>>>> 905359f06edd89069b07eab7a4071f213638a66a:run_pipeline_module.sh
 
 DATA_DIR="./data"
 LOG_DIR="./logs"
