@@ -210,7 +210,8 @@ class MimicDataset(torch.utils.data.Dataset):
       logging.info("  Randomly choose %d negative samples from %d candidates",
                    len(self.positives), len(self.negatives))
 
-      return random.choices(self.negatives, k=len(self.positives)) + self.positives
+      return random.choices(
+          self.negatives, k=len(self.positives)) + self.positives
 
     else:
       sample_list = random.choices(self.negatives, k=self.dataset_size // 2)
