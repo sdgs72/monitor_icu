@@ -112,6 +112,7 @@ def train(configs):
       upper_bound_factor=FLAGS.upper_bound_factor,
   )
   logging.info("Creating dataset completed!")
+
   logging.info("Creating dataset loader...")
   train_loader = torch.utils.data.DataLoader(
       dataset=train_dataset,
@@ -120,11 +121,6 @@ def train(configs):
       drop_last=False,
   )
   logging.info("Creating dataset loader completed!")
-  logging.info("First 10 records in the dataset (for debug):")
-  for i in range(10):
-    record = train_dataset[i][2]
-    logging.info("[%d] HADM_ID: %d, From %d to %d, Label: %s", i, record[0],
-                 record[1], record[2], train_dataset[i][1])
 
   logging.info("Creating model for training...")
   model = MimicModel(
@@ -243,7 +239,8 @@ def inference(configs):
       standardize=configs["standardize"],
       standard_scaler_path=os.path.join(root_dir, default_standard_scaler_name),
       phase="inference",
-      upper_bound_factor=FLAGS.upper_bound_factor,
+      upper_bound_factor=configs["upper_bound_factor"],
+      fix_dataset_seed=configs["fix_eval_dataset_seed"],
   )
 
   eval_loader = torch.utils.data.DataLoader(
