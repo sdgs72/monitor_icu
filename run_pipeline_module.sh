@@ -28,7 +28,7 @@ python3 code/main.py \
   --target_label="${TARGET}" \
   --block_size=6 \
   --history_window=56 \
-  --prediction_window=4 \s
+  --prediction_window=4 \
   --train_dataset_size=0 \
   --eval_dataset_size=-1 \
   --rnn_layers=1 \
