@@ -40,7 +40,7 @@ def update_metrics(y_true, y_score, phase, summary_writer=None, step=0):
 
   pr_precision, pr_recall, _ = sklearn.metrics.precision_recall_curve(
       y_true=y_true, probas_pred=sigmoid(y_score))
-  pr_auc = sklearn.metrics.auc(recall, precision)
+  pr_auc = sklearn.metrics.auc(pr_recall, pr_precision)
   if summary_writer is not None:
     summary_writer.add_pr_curve("%s/pr_curve" % phase, y_true, sigmoid(y_score),
                                 step)
@@ -51,6 +51,7 @@ def update_metrics(y_true, y_score, phase, summary_writer=None, step=0):
   logging.info("Accuracy: %.4f", accuracy)
   logging.info("F1 Score: %.4f", f1)
   logging.info("ROC AUC Score: %.4f", roc_auc)
+  logging.info("PR AUC Score: %.4f", pr_auc)
   logging.info("Average Precision: %.4f", ap)
 
   logging.info(

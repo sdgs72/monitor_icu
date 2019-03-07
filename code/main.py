@@ -112,7 +112,6 @@ def train(configs):
       upper_bound_factor=FLAGS.upper_bound_factor,
   )
   logging.info("Creating dataset completed!")
-
   logging.info("Creating dataset loader...")
   train_loader = torch.utils.data.DataLoader(
       dataset=train_dataset,
@@ -121,6 +120,11 @@ def train(configs):
       drop_last=False,
   )
   logging.info("Creating dataset loader completed!")
+  logging.info("First 10 records in the dataset (for debug):")
+  for i in range(10):
+    record = train_dataset[i][2]
+    logging.info("[%d] HADM_ID: %d, From %d to %d, Label: %s", i, record[0],
+                 record[1], record[2], train_dataset[i][1])
 
   logging.info("Creating model for training...")
   model = MimicModel(
@@ -404,13 +408,7 @@ def pipeline(configs):
   scheduler = torch.optim.lr_scheduler.StepLR(
       optimizer, step_size=FLAGS.num_epochs // 5, gamma=0.3)
 
-  best_metrics = {
-      "accuracy": None,
-      "roc_auc": None,
-      "ap": None,
-      "f1": None,
-      "loss": None
-  }
+  best_metrics = {}
   best_checkpoint_name = os.path.join(
       root_dir, "checkpoint_best_{metric}_on_%s_epoch{epoch:03d}.model"
   ) % FLAGS.eval_data_split
@@ -495,9 +493,9 @@ def pipeline(configs):
       }
 
       for metric_name, metric in metrics.items():
-        if (best_metrics[metric_name] is None or
+        if (metric_name not in best_metrics or
             metric >= best_metrics[metric_name][0]):
-          if best_metrics[metric_name] is not None:
+          if metric_name in best_metrics:
             old_checkpoint_name = best_checkpoint_name.format(
                 metric=metric_name, epoch=best_metrics[metric_name][1])
             if os.path.exists(old_checkpoint_name):

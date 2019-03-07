@@ -142,9 +142,15 @@ class MimicDataset(torch.utils.data.Dataset):
     return aggregated_data
 
   def resample(self):
-    logging.info("Resample dataset...")
+    sample_list = self._sample_data()
     logging.info("Resample dataset completed!")
-    return self._sample_data()
+    logging.info("First 10 records in the %s dataset:", self.data_split)
+    for i in range(10):
+      record = sample_list[i]
+      logging.info("[%d] HADM_ID: %s, From %d to %d, Label: %s", i, record[0],
+                   record[1][0], record[1][1], record[2])
+
+    return sample_list
 
   def _preprocessing(self):
     decomposer, standard_scaler = None, None
