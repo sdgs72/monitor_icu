@@ -377,7 +377,6 @@ def pipeline(configs):
       shuffle=True,
       drop_last=False,
   )
-  eval_dataset.resample()
 
   model = MimicModel(
       model_type=configs["model_type"],
