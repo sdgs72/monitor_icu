@@ -299,6 +299,11 @@ def inference(configs):
         else:
           attention_score = None
 
+        if "outputs" in endpoints:
+          outputs = endpoints["outputs"]
+        else:
+          outputs = None
+
         prediction.add_prediction(data_info, logits, labels, attention_score)
 
         y_true.append(labels.numpy())

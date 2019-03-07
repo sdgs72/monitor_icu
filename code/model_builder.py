@@ -59,7 +59,8 @@ class MimicModel(torch.nn.Module):
     else:
       raise ValueError("Only `LSTM` and `GRU` are supported `rnn_type`.")
 
-    num_directions = 2 if self.model_type == "rnn" and self.rnn_bidirectional else 1
+    if self.model_type == "rnn" and self.rnn_bidirectional:
+      self.rnn_hidden_size /= 2
 
     # if self.train_embedding:
     #   if not vocabulary_path or not os.path.exists(vocabulary_path):
@@ -78,11 +79,13 @@ class MimicModel(torch.nn.Module):
           bidirectional=self.rnn_bidirectional)
 
       self.rnn_linear = torch.nn.Linear(
-          in_features=self.rnn_hidden_size * num_directions, out_features=1)
+          in_features=self.rnn_hidden_size * (self.rnn_bidirectional + 1),
+          out_features=1)
 
       if self.use_attention:
         self.attention_layer = torch.nn.Linear(
-            in_features=self.rnn_hidden_size * num_directions, out_features=1)
+            in_features=self.rnn_hidden_size * (self.rnn_bidirectional + 1),
+            out_features=1)
 
     if self.model_type == "lr":
       if self.use_attention:
@@ -125,21 +128,17 @@ class MimicModel(torch.nn.Module):
 
   def _rnn_forward(self, inputs):
     outputs, aux_states = self.rnn_module(inputs)
+    output_embedding = aux_states[0]
 
     if self.rnn_bidirectional:
-      (batch_size, sequence_length, _) = list(outputs.size())
-      outputs = outputs.view(batch_size, sequence_length, 2,
-                             self.rnn_hidden_size)
-      forward_embedding = outputs[:, -1, 0, :]
-      backward_embedding = outputs[:, 0, 1, :]
-      output_embedding = torch.cat((forward_embedding, backward_embedding),
-                                   dim=1)
+      output_embedding = output_embedding.transpose(0, 1).reshape(
+          batch_size, self.rnn_hidden_size * 2)
     else:
-      output_embedding = outputs[:, -1, :]
+      output_embedding = output_embedding.squeeze(dim=0)
 
     logits = self.rnn_linear(output_embedding).squeeze(1)
 
-    endpoints = {"aux_states": aux_states}
+    endpoints = {"outputs": outputs, "aux_states": aux_states}
 
     return logits, endpoints
 
@@ -154,6 +153,7 @@ class MimicModel(torch.nn.Module):
 
     endpoints = {
         "attention_scores": attention_score,
+        "outputs": outputs,
         "aux_states": aux_states,
     }
 
