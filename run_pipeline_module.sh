@@ -28,12 +28,13 @@ python3 code/main.py \
   --target_label="${TARGET}" \
   --block_size=6 \
   --history_window=56 \
-  --prediction_window=4 \
+  --prediction_window=4 \s
   --train_dataset_size=0 \
   --eval_dataset_size=-1 \
   --rnn_layers=1 \
   --rnn_dropout=0 \
   --standardize \
   --save_per_epochs=10 \
+  --upper_bound_factor=5 \
   --checkpoint_dir="./experiments" \
   --experiment_name="${EXPERIMENT}" >> ${LOG_DIR}/${EXPERIMENT}_train.log 2>&1

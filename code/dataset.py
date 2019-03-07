@@ -31,6 +31,7 @@ class MimicDataset(torch.utils.data.Dataset):
       standardize,
       standard_scaler_path,
       phase,
+      upper_bound_factor,
   ):
     """Initializes dataset.
 
@@ -49,6 +50,7 @@ class MimicDataset(torch.utils.data.Dataset):
       standardize: Whether to standardize inputs for zero mean and unit variance.
       standard_scaler_path: Path to precomputed (on `train`) standardizer.
       phase: `training` or `inference`.
+      upper_bound_factor: number
     """
     self.data_name = "%s_interval1_data.npy"
     self.label_name = "hadm_infos.csv"
@@ -66,9 +68,10 @@ class MimicDataset(torch.utils.data.Dataset):
     self.standard_scaler_path = standard_scaler_path
     self.phase = phase
     # variable to set uppder bound
-    self.upper_bound_each_hadm_id = int(self.prediction_window *1.5)+1
+    self.upper_bound_factor = upper_bound_factor
+    self.upper_bound_each_hadm_id = int(self.prediction_window *self.upper_bound_factor)+1
     # variable recording the dropped hadmins
-    self.dropped_hadm_id = []
+    #self.dropped_hadm_id = []
 
     if self.data_split not in ["train", "val", "test"]:
       raise ValueError(
@@ -184,10 +187,10 @@ class MimicDataset(torch.utils.data.Dataset):
       if label_time < 0:  # all negatives
 
         #Mar 6: drop the ones with few effective events (these been regarded as abnormal ones)
-        cur_data = self.data[hadm_id]
-        if sum([1 for each in np.sum(cur_data,axis=1) if each == 0]) > cur_data.shape[0]*0.9:
-          self.dropped_hadm_id.append(hadm_id)
-          continue
+        #cur_data = self.data[hadm_id]
+        #if sum([1 for each in np.sum(cur_data,axis=1) if each == 0]) > cur_data.shape[0]*0.9:
+        #  self.dropped_hadm_id.append(hadm_id)
+        #  continue
         #
 
         end_time = self.durations[hadm_id]

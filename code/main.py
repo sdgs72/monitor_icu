@@ -73,6 +73,7 @@ flags.DEFINE_integer(
     "Save intermediate checkpoints every few training epochs.")
 flags.DEFINE_string("eval_checkpoint", None,
                     "Specifies a checkpoint for inference.")
+flags.DEFINE_integer("upper_bound_factor",5,"upper bound factor to reduce oversampling negatives for long admission")
 
 default_decomposer_name = "pca_decomposer.joblib"
 default_standard_scaler_name = "standard_scaler.joblib"
@@ -103,6 +104,7 @@ def train(configs):
       standardize=configs["standardize"],
       standard_scaler_path=os.path.join(root_dir, default_standard_scaler_name),
       phase="training",
+      upper_bound_factor=FLAGS.upper_bound_factor,
   )
   logging.info("Creating dataset completed!")
 
@@ -232,6 +234,7 @@ def inference(configs):
       standardize=configs["standardize"],
       standard_scaler_path=os.path.join(root_dir, default_standard_scaler_name),
       phase="inference",
+      upper_bound_factor=FLAGS.upper_bound_factor,
   )
 
   eval_loader = torch.utils.data.DataLoader(
@@ -331,6 +334,7 @@ def pipeline(configs):
       standardize=configs["standardize"],
       standard_scaler_path=os.path.join(root_dir, default_standard_scaler_name),
       phase="training",
+      upper_bound_factor=FLAGS.upper_bound_factor,
   )
   train_loader = torch.utils.data.DataLoader(
       dataset=train_dataset,
@@ -353,6 +357,7 @@ def pipeline(configs):
       standardize=configs["standardize"],
       standard_scaler_path=os.path.join(root_dir, default_standard_scaler_name),
       phase="inference",
+      upper_bound_factor=FLAGS.upper_bound_factor,
   )
   eval_loader = torch.utils.data.DataLoader(
       dataset=eval_dataset,
@@ -543,6 +548,7 @@ def save_and_load_flags():
         "data_dir": FLAGS.data_dir,
         "lr_pooling": FLAGS.lr_pooling,
         "save_per_epochs": FLAGS.save_per_epochs,
+        "upper_bound_factor": FLAGS.upper_bound_factor,
     }
 
     with open(flag_saving_path, "w") as fp:
