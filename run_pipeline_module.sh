@@ -4,7 +4,7 @@ set -x
 
 TARGET="death"
 
-EXPERIMENT="exp_2_h"
+EXPERIMENT="exp_name"
 
 DATA_DIR="./data"
 LOG_DIR="./logs"
@@ -30,11 +30,12 @@ python3 code/main.py \
   --history_window=56 \
   --prediction_window=4 \
   --train_dataset_size=0 \
-  --eval_dataset_size=-1 \
+  --eval_dataset_size=0 \
   --rnn_layers=1 \
   --rnn_dropout=0 \
   --standardize \
   --save_per_epochs=10 \
   --upper_bound_factor=5 \
+  --fix_eval_dataset_seed=3750 \
   --checkpoint_dir="./experiments" \
-  --experiment_name="${EXPERIMENT}" >> ${LOG_DIR}/${EXPERIMENT}_train.log 2>&1
+  --experiment_name="${EXPERIMENT}" >> ${LOG_DIR}/${EXPERIMENT}_train.log 2>&1 &

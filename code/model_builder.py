@@ -60,7 +60,7 @@ class MimicModel(torch.nn.Module):
       raise ValueError("Only `LSTM` and `GRU` are supported `rnn_type`.")
 
     if self.model_type == "rnn" and self.rnn_bidirectional:
-      self.rnn_hidden_size /= 2
+      self.rnn_hidden_size = self.rnn_hidden_size // 2
 
     # if self.train_embedding:
     #   if not vocabulary_path or not os.path.exists(vocabulary_path):
@@ -132,7 +132,7 @@ class MimicModel(torch.nn.Module):
 
     if self.rnn_bidirectional:
       output_embedding = output_embedding.transpose(0, 1).reshape(
-          batch_size, self.rnn_hidden_size * 2)
+          outputs.shape[0], self.rnn_hidden_size * 2)
     else:
       output_embedding = output_embedding.squeeze(dim=0)
 

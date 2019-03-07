@@ -78,9 +78,15 @@ class Prediction:
     self.labels = []
     self.logits = []
     self.attentions = []
+    self.rnn_outputs = []
     return
 
-  def add_prediction(self, data_info, logits, labels, attentions=None):
+  def add_prediction(self,
+                     data_info,
+                     logits,
+                     labels,
+                     attentions=None,
+                     rnn_outputs=None):
     hadm_ids, start_blocks, end_blocks = data_info
 
     self.hadm_ids.append(hadm_ids.numpy())
@@ -92,6 +98,9 @@ class Prediction:
 
     if attentions is not None:
       self.attentions.append(attentions.numpy().squeeze(axis=-1))
+
+    if rnn_outputs is not None:
+      self.rnn_outputs.append(rnn_outputs.numpy())
 
     return
 
