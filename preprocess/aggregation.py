@@ -10,8 +10,8 @@ from scipy.sparse import csr_matrix
 # Total HADM IDs: 22049
 VOC_SIZE = 4222  # added abnormal_high, abnormal_low flags, total 4225, excluding "Sepsis1", "Death0", "Death1"
 WINDOW_LENGTH = 1  # 1 hour per block
-SPLIT_DIR = "../data"
-RAW_DATA = SPLIT_DIR + "/raw_data/MIMIC_FULL_BATCH.csv"
+SPLIT_DIR = "../data/"
+RAW_DATA = "../raw_data/MIMIC_FULL_BATCH.csv"
 VOCABULARY_FILE = "../data/events_vocabulary.csv"
 HADM_INFO_FILE = "../data/hadm_infos.csv"
 

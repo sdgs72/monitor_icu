@@ -5,7 +5,7 @@ import random
 
 random.seed(3750)
 
-csv_path = "../data/raw_data/MIMIC_ADM_INFO.csv"
+csv_path = "../raw_data/MIMIC_ADM_INFO.csv"
 root_path = "../data"
 
 train, val, test = [], [], []

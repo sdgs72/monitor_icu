@@ -32,6 +32,7 @@ class MimicDataset(torch.utils.data.Dataset):
       standard_scaler_path,
       phase,
       upper_bound_factor,
+      fix_dataset_seed=None,
   ):
     """Initializes dataset.
 
@@ -69,9 +70,16 @@ class MimicDataset(torch.utils.data.Dataset):
     self.phase = phase
     # variable to set uppder bound
     self.upper_bound_factor = upper_bound_factor
-    self.upper_bound_each_hadm_id = int(self.prediction_window *self.upper_bound_factor)+1
+    self.upper_bound_each_hadm_id = int(
+        self.prediction_window * self.upper_bound_factor) + 1
     # variable recording the dropped hadmins
     #self.dropped_hadm_id = []
+    self.fix_dataset_seed = fix_dataset_seed
+
+    if self.fix_dataset_seed is None:
+      self.random_generator = random
+    else:
+      self.random_generator = random.Random(self.fix_dataset_seed)
 
     if self.data_split not in ["train", "val", "test"]:
       raise ValueError(
@@ -204,10 +212,12 @@ class MimicDataset(torch.utils.data.Dataset):
             start_time + self.history_window + self.prediction_window)
         label = label_time in prediction_window
         [negatives, positives][label].append((hadm_id, history_window, label))
-      # Mar 6: pre-sample the negatives set of this hadm_id to be a set with a size no larger than uppder_bound_each_hadm_id
+      # Mar 6: pre-sample the negatives set of this hadm_id to be a set with a
+      # size no larger than uppder_bound_each_hadm_id
       if len(negatives) > self.upper_bound_each_hadm_id:
-        negatives = random.sample(negatives, self.upper_bound_each_hadm_id)
-      #
+        negatives = self.random_generator.sample(negatives,
+                                                 self.upper_bound_each_hadm_id)
+
       full_negatives += negatives
       full_positives += positives
 
@@ -228,12 +238,13 @@ class MimicDataset(torch.utils.data.Dataset):
       logging.info("  Randomly choose %d negative samples from %d candidates",
                    len(self.positives), len(self.negatives))
 
-      return random.choices(
+      return self.random_generator.choices(
           self.negatives, k=len(self.positives)) + self.positives
 
     else:
-      sample_list = random.choices(self.negatives, k=self.dataset_size // 2)
-      sample_list += random.choices(
+      sample_list = self.random_generator.choices(
+          self.negatives, k=self.dataset_size // 2)
+      sample_list += self.random_generator.choices(
           self.positives, k=self.dataset_size - self.dataset_size // 2)
 
       return sample_list

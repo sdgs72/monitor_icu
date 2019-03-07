@@ -73,7 +73,12 @@ flags.DEFINE_integer(
     "Save intermediate checkpoints every few training epochs.")
 flags.DEFINE_string("eval_checkpoint", None,
                     "Specifies a checkpoint for inference.")
-flags.DEFINE_integer("upper_bound_factor",5,"upper bound factor to reduce oversampling negatives for long admission")
+flags.DEFINE_integer(
+    "upper_bound_factor", 5,
+    "upper bound factor to reduce oversampling negatives for long admission")
+flags.DEFINE_integer(
+    "fix_eval_dataset_seed", None,
+    "Whether to fix the generated dataset (seed for random generator).")
 
 default_decomposer_name = "pca_decomposer.joblib"
 default_standard_scaler_name = "standard_scaler.joblib"
@@ -334,7 +339,7 @@ def pipeline(configs):
       standardize=configs["standardize"],
       standard_scaler_path=os.path.join(root_dir, default_standard_scaler_name),
       phase="training",
-      upper_bound_factor=FLAGS.upper_bound_factor,
+      upper_bound_factor=configs["upper_bound_factor"],
   )
   train_loader = torch.utils.data.DataLoader(
       dataset=train_dataset,
@@ -357,7 +362,8 @@ def pipeline(configs):
       standardize=configs["standardize"],
       standard_scaler_path=os.path.join(root_dir, default_standard_scaler_name),
       phase="inference",
-      upper_bound_factor=FLAGS.upper_bound_factor,
+      upper_bound_factor=configs["upper_bound_factor"],
+      fix_dataset_seed=configs["fix_eval_dataset_seed"],
   )
   eval_loader = torch.utils.data.DataLoader(
       dataset=eval_dataset,
@@ -476,7 +482,7 @@ def pipeline(configs):
           if (i + 1) % 10 == 0:
             logging.info("Progress: %d / %d", i + 1, len(eval_loader))
 
-      accuracy, f1, roc_auc, ap = utilities.update_metrics(
+      accuracy, f1, roc_auc, ap, pr_auc = utilities.update_metrics(
           y_true, y_score, phase, summary_writer, epoch + 1)
 
       metrics = {
@@ -484,7 +490,8 @@ def pipeline(configs):
           "f1": f1,
           "roc_auc": roc_auc,
           "ap": ap,
-          "loss": loss
+          "loss": loss,
+          "pr_auc": pr_auc,
       }
 
       for metric_name, metric in metrics.items():
@@ -549,6 +556,7 @@ def save_and_load_flags():
         "lr_pooling": FLAGS.lr_pooling,
         "save_per_epochs": FLAGS.save_per_epochs,
         "upper_bound_factor": FLAGS.upper_bound_factor,
+        "fix_eval_dataset_seed": FLAGS.fix_eval_dataset_seed,
     }
 
     with open(flag_saving_path, "w") as fp:

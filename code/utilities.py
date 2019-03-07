@@ -38,11 +38,13 @@ def update_metrics(y_true, y_score, phase, summary_writer=None, step=0):
   if summary_writer is not None:
     summary_writer.add_scalar("%s/average_precision" % phase, ap, step)
 
-  pr_curve = sklearn.metrics.precision_recall_curve(
+  pr_precision, pr_recall, _ = sklearn.metrics.precision_recall_curve(
       y_true=y_true, probas_pred=sigmoid(y_score))
+  pr_auc = sklearn.metrics.auc(recall, precision)
   if summary_writer is not None:
     summary_writer.add_pr_curve("%s/pr_curve" % phase, y_true, sigmoid(y_score),
                                 step)
+    summary_writer.add_scalar("%s/pr_auc" % phase, pr_auc, step)
 
   logging.info("Total: %d", total)
   logging.info("Correct: %d", corrects)
@@ -60,7 +62,7 @@ def update_metrics(y_true, y_score, phase, summary_writer=None, step=0):
           digits=4))
   logging.info("=" * 50)
 
-  return accuracy, f1, roc_auc, ap
+  return accuracy, f1, roc_auc, ap, pr_auc
 
 
 class Prediction:
