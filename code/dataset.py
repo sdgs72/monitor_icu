@@ -106,6 +106,9 @@ class MimicDataset(torch.utils.data.Dataset):
     hadm_id, (start_time, end_time), label = self.sample_list[idx]
     data = self.data[hadm_id][start_time:end_time, :]
 
+    if data.shape[0] != self.history_window:
+      raise AssertionError("Inconsistent data length.")
+
     if self.pca_dim:
       data = self.decomposer.transform(data)
 
@@ -121,9 +124,12 @@ class MimicDataset(torch.utils.data.Dataset):
       """Convert sparse matrix to np.ndarray, pad with zeros and reshape."""
       mat = mat.toarray()
       num_hours, voc_size = mat.shape
-      zeros = np.zeros((self.block_size - num_hours % self.block_size,
-                        voc_size))
-      padded = np.vstack((mat, zeros))
+      if num_hours % self.block_size != 0:
+        zeros = np.zeros((self.block_size - num_hours % self.block_size,
+                          voc_size))
+        padded = np.vstack((mat, zeros))
+      else:
+        padded = mat
 
       if padded.shape[0] % self.block_size:
         raise AssertionError("Invalid shape in padded data matrix.")
@@ -197,7 +203,12 @@ class MimicDataset(torch.utils.data.Dataset):
     logging.info("Number of instances in labels: %d",
                  len(self.labels[self.target_label]))
     for hadm_id, label_time in self.labels[self.target_label].items():
+      # (mingdaz): bug fix. If event happens after death/discharge, discard.
+      if label_time > self.durations[hadm_id]:
+        continue
+
       negatives, positives = [], []
+
       if label_time < 0:  # all negatives
 
         #Mar 6: drop the ones with few effective events (these been regarded as abnormal ones)
@@ -205,7 +216,6 @@ class MimicDataset(torch.utils.data.Dataset):
         #if sum([1 for each in np.sum(cur_data,axis=1) if each == 0]) > cur_data.shape[0]*0.9:
         #  self.dropped_hadm_id.append(hadm_id)
         #  continue
-        #
 
         end_time = self.durations[hadm_id]
       else:

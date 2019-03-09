@@ -518,9 +518,6 @@ def pipeline(configs):
     torch.save(model.state_dict(), checkpoint_name)
     logging.info("Model saved at %s", checkpoint_name)
 
-  finally:
-    logging.info("Train/Eval completed.")
-
   return
 
 
