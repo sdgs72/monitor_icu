@@ -104,18 +104,19 @@ class Prediction:
 
     return
 
-  def write_to_csv(self, filename):
+  def save_inference_results(self, filename):
     header = [
-        "hadm_id", "block_size", "start_block", "end_block", "history_window",
+        "block_size", "start_block", "end_block", "history_window",
         "prediction_window", "ground_truth", "logit", "pred_score", "prediction"
     ]
 
     hadm_ids = np.concatenate(self.hadm_ids)
-    block_size = np.ones(hadm_ids.shape) * self.block_size
+    block_size = np.ones(hadm_ids.shape).astype(int) * self.block_size
     start_blocks = np.concatenate(self.start_blocks)
     end_blocks = np.concatenate(self.end_blocks)
-    history_window = np.ones(hadm_ids.shape) * self.history_window
-    prediction_window = np.ones(hadm_ids.shape) * self.prediction_window
+    history_window = np.ones(hadm_ids.shape).astype(int) * self.history_window
+    prediction_window = np.ones(
+        hadm_ids.shape).astype(int) * self.prediction_window
     labels = np.concatenate(self.labels)
     logits = np.concatenate(self.logits)
     pred_scores = sigmoid(logits)
@@ -126,33 +127,34 @@ class Prediction:
     assert num_instances == end_blocks.shape[0]
     assert num_instances == labels.shape[0]
     assert num_instances == logits.shape[0]
+    assert num_instances == pred_scores.shape[0]
+    assert num_instances == predictions.shape[0]
 
     data = [
         hadm_ids, block_size, start_blocks, end_blocks, history_window,
         prediction_window, labels, logits, pred_scores, predictions
     ]
 
-    data = np.stack(data, axis=1)
-    save_format = ["%d"] * 7 + ["%.6f", "%.6f", "%d"]
-
     if len(self.attentions) > 0:
-      header.extend(
-          ["attention_score@%d" % i for i in range(self.history_window)])
       attentions = np.concatenate(self.attentions, axis=0)
+      data.append(attentions)
+      header.append("attentions")
 
-      logging.info("data dim: %s", data.shape)
-      logging.info("attention dim: %s", attentions.shape)
-
-      data = np.concatenate([data, attentions], axis=1)
-      save_format.extend(["%.6f"] * self.history_window)
       assert num_instances == attentions.shape[0]
 
-    delimiter = ","
-    np.savetxt(
-        filename,
-        data,
-        fmt=save_format,
-        delimiter=delimiter,
-        header=delimiter.join(header))
+    if len(self.rnn_outputs) > 0:
+      rnn_outputs = np.concatenate(self.rnn_outputs, axis=0)
+      data.append(rnn_outputs)
+      header.append("rnn_outputs")
+
+      assert num_instances == rnn_outputs.shape[0]
+
+    inference_results = {}
+    for (hadm_id, *info) in zip(*data):
+      inference_results[str(hadm_id)] = {
+          key: val for (key, val) in zip(header, info)
+      }
+
+    joblib.dump(inference_results, filename)
 
     return

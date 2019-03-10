@@ -1,4 +1,3 @@
-#TODO remove data files in data folder,  rerun -split_data then aggregation
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -294,8 +293,8 @@ def inference(configs):
       for i, (inputs, labels, data_info) in enumerate(eval_loader):
         logits, endpoints = model(inputs)
 
-        if "attention_score" in endpoints:
-          attention_score = endpoints["attention_score"]
+        if "attention_scores" in endpoints:
+          attention_score = endpoints["attention_scores"]
         else:
           attention_score = None
 
@@ -304,7 +303,8 @@ def inference(configs):
         else:
           outputs = None
 
-        prediction.add_prediction(data_info, logits, labels, attention_score)
+        prediction.add_prediction(data_info, logits, labels, attention_score,
+                                  outputs)
 
         y_true.append(labels.numpy())
         y_score.append(logits.numpy())
@@ -314,9 +314,9 @@ def inference(configs):
 
       utilities.update_metrics(y_true, y_score, phase)
 
-    prediction.write_to_csv(
+    prediction.save_inference_results(
         checkpoint_path.replace(".model",
-                                "_eval_on_%s.csv" % FLAGS.eval_data_split))
+                                "_eval_on_%s.joblib" % FLAGS.eval_data_split))
   logging.info("Evaluation on %d models complete.", len(model_checkpoints))
 
   return
@@ -489,7 +489,6 @@ def pipeline(configs):
           "f1": f1,
           "roc_auc": roc_auc,
           "ap": ap,
-          "loss": loss,
           "pr_auc": pr_auc,
       }
 

@@ -182,5 +182,5 @@ class MimicModel(torch.nn.Module):
     attention_score = torch.nn.functional.softmax(attention, dim=1)
     output_embedding = torch.sum(attention_score * inputs, dim=1)
     logits = self.lr_linear(output_embedding).squeeze(1)
-    endpoints = {"attention_score": attention_score}
+    endpoints = {"attention_scores": attention_score}
     return logits, endpoints
