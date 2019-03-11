@@ -30,11 +30,11 @@ def update_metrics(y_true, y_score, phase, summary_writer=None, step=0):
   if summary_writer is not None:
     summary_writer.add_scalar("%s/f1" % phase, f1, step)
 
-  roc_auc = sklearn.metrics.roc_auc_score(y_true=y_true, y_score=y_score)
+  roc_auc = sklearn.metrics.roc_auc_score(y_true=y_true, y_score=sigmoid(y_score))
   if summary_writer is not None:
     summary_writer.add_scalar("%s/roc_auc" % phase, roc_auc, step)
 
-  ap = sklearn.metrics.average_precision_score(y_true=y_true, y_score=y_score)
+  ap = sklearn.metrics.average_precision_score(y_true=y_true, y_score=sigmoid(y_score))
   if summary_writer is not None:
     summary_writer.add_scalar("%s/average_precision" % phase, ap, step)
 
