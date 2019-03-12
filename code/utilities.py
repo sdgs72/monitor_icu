@@ -13,9 +13,9 @@ def sigmoid(x):
   return np.exp(-np.logaddexp(0, -x))
 
 
-def update_metrics(y_true, y_score, phase, summary_writer=None, step=0):
-  y_true = np.concatenate(y_true, axis=None)
-  y_score = np.concatenate(y_score, axis=None)
+def update_metrics(y_true_, y_score_, phase, summary_writer=None, step=0):
+  y_true = np.concatenate(y_true_, axis=None)
+  y_score = np.concatenate(y_score_, axis=None)
   y_pred = y_score > 0
 
   logging.info("=" * 50)
@@ -30,11 +30,13 @@ def update_metrics(y_true, y_score, phase, summary_writer=None, step=0):
   if summary_writer is not None:
     summary_writer.add_scalar("%s/f1" % phase, f1, step)
 
-  roc_auc = sklearn.metrics.roc_auc_score(y_true=y_true, y_score=sigmoid(y_score))
+  roc_auc = sklearn.metrics.roc_auc_score(
+      y_true=y_true, y_score=sigmoid(y_score))
   if summary_writer is not None:
     summary_writer.add_scalar("%s/roc_auc" % phase, roc_auc, step)
 
-  ap = sklearn.metrics.average_precision_score(y_true=y_true, y_score=sigmoid(y_score))
+  ap = sklearn.metrics.average_precision_score(
+      y_true=y_true, y_score=sigmoid(y_score))
   if summary_writer is not None:
     summary_writer.add_scalar("%s/average_precision" % phase, ap, step)
 
@@ -106,7 +108,7 @@ class Prediction:
 
   def save_inference_results(self, filename):
     header = [
-        "block_size", "start_block", "end_block", "history_window",
+        "hadm_id", "start_block", "end_block", "block_size", "history_window",
         "prediction_window", "ground_truth", "logit", "pred_score", "prediction"
     ]
 
@@ -131,7 +133,7 @@ class Prediction:
     assert num_instances == predictions.shape[0]
 
     data = [
-        hadm_ids, block_size, start_blocks, end_blocks, history_window,
+        hadm_ids, start_blocks, end_blocks, block_size, history_window,
         prediction_window, labels, logits, pred_scores, predictions
     ]
 
@@ -150,8 +152,12 @@ class Prediction:
       assert num_instances == rnn_outputs.shape[0]
 
     inference_results = {}
-    for (hadm_id, *info) in zip(*data):
-      inference_results[str(hadm_id)] = {
+    for info in zip(*data):
+      if info[:3] in inference_results:
+        logging.info("duplicate key %s: duplicate prediction? \n%s\n%s",
+                     info[:3], inference_results[info[:3]],
+                     {key: val for (key, val) in zip(header, info)})
+      inference_results[info[:3]] = {
           key: val for (key, val) in zip(header, info)
       }
 

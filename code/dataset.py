@@ -237,6 +237,12 @@ class MimicDataset(torch.utils.data.Dataset):
       full_negatives += negatives
       full_positives += positives
 
+      if len(set(full_negatives)) != len(full_negatives):
+        logging.warning("Duplicate samples in negative dataset.")
+
+      if len(set(full_positives)) != len(full_positives):
+        logging.warning("Duplicate samples in positive dataset.")
+
     return full_negatives, full_positives
 
   def _sample_data(self):
@@ -254,7 +260,7 @@ class MimicDataset(torch.utils.data.Dataset):
       logging.info("  Randomly choose %d negative samples from %d candidates",
                    len(self.positives), len(self.negatives))
 
-      return self.random_generator.choices(
+      return self.random_generator.sample(
           self.negatives, k=len(self.positives)) + self.positives
 
     else:
