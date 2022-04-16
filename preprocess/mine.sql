@@ -58,8 +58,19 @@ timestampdiff(hour, adm.DISCHTIME, med.STARTTIME) as Time_to_Discharge
 from mimiciiiv14.ADMISSIONS adm
 left join mimiciiiv14.INPUTEVENTS_MV med on adm.HADM_ID = med.HADM_ID;
 
+
+
 # VIT EVENTS
-INSERT INTO VIT_EVENTS
+CREATE TABLE mimiciiiv14.MY_VIT_EVENTS (
+	HADM_ID mediumint unsigned NOT NULL,
+	EventType varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '' NOT NULL,
+	ITEMID varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+	ITEMID2 varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+	EventStartTime datetime NOT NULL,
+	Time_to_Discharge bigint NULL
+)
+
+INSERT INTO MY_VIT_EVENTS
 select adm.HADM_ID,
 #adm.DISCHTIME,adm.DEATHTIME,
 'Vit' as EventType, vit.ITEMID,
@@ -70,7 +81,7 @@ end as ITEMID2,
 vit.CHARTTIME as EventStartTime,
 timestampdiff(hour, adm.DISCHTIME, vit.CHARTTIME) as Time_to_Discharge
 from mimiciiiv14.ADMISSIONS adm
-left join mimiciiiv14.CHARTEVENTS vit on adm.HADM_ID = vit.HADM_ID;
+join mimiciiiv14.CHARTEVENTS vit on adm.HADM_ID = vit.HADM_ID;
 
 
 
@@ -86,5 +97,24 @@ t.* from
 
 #Vocabulary calculation
 select count(distinct ITEMID) from MED_EVENTS; #277
+select count(distinct ITEMID) from LAB_EVENTS; #666
+select count(distinct ITEMID2) from LAB_EVENTS; #931
 select count(distinct ITEMID, ITEMID2) from LAB_EVENTS; #931
-select count (distinct ITEMID, ITEMID2) from VIT_EVENTS;
+select count(distinct ITEMID, ITEMID2) from MY_VIT_EVENTS; #2798
+
+
+
+# All joinedevents
+CREATE TABLE JOINED_EVENTS (
+	HADM_ID mediumint unsigned NOT NULL,
+	EventType varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+	ITEMID varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+	ITEMID2 varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL,
+	EventStartTime datetime NOT NULL,
+	Time_to_Discharge bigint NOT NULL
+)
+
+INSERT INTO JOINED_EVENTS select * from DEATH_EVENTS;
+INSERT INTO JOINED_EVENTS select * from LAB_EVENTS;
+INSERT INTO JOINED_EVENTS select * from MED_EVENTS;
+INSERT INTO JOINED_EVENTS select * from MY_VIT_EVENTS;
