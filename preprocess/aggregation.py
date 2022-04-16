@@ -15,6 +15,10 @@ RAW_DATA = "../raw_data/MIMIC_FULL_BATCH.csv"
 VOCABULARY_FILE = "../data/events_vocabulary.csv"
 HADM_INFO_FILE = "../data/hadm_infos.csv"
 
+#TODO use EventStartTime or Time_To_Discharge
+#TIME_KEY = "Time_To_Discharge"
+TIME_KEY = 'Time_to_Discharge'
+
 
 def get_data_splits(dir_path):
   data = {}
@@ -47,7 +51,8 @@ if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
       hadm_id = row["HADM_ID"]
       all_hadm_ids.add(hadm_id)
 
-      time = int(row["TIME"])
+      time = int(row[TIME_KEY])
+      #time = int(row["TIME"])
       if event == "Sepsis1":
         sepsis_time[hadm_id] = time
       elif event == "Death0":
@@ -146,7 +151,8 @@ with open(RAW_DATA, "r") as fp:
         record = np.zeros((hadm_length[hadm_id], VOC_SIZE))
 
     key = row["EventType"] + row["ITEMID2"]
-    block = int(row["TIME"]) // WINDOW_LENGTH
+    # print(f"DXH HELLLOOOOOO {row} \n")
+    block = int(row[TIME_KEY]) // WINDOW_LENGTH
     if key not in events_vocabulary:
       # print("%s not in events vocabulary." % key)
       continue

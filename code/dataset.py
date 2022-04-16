@@ -12,8 +12,8 @@ import torch.utils.data
 import random
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-from sklearn.externals import joblib
-
+#from sklearn.externals import joblib
+import joblib
 
 class MimicDataset(torch.utils.data.Dataset):
 
@@ -85,8 +85,11 @@ class MimicDataset(torch.utils.data.Dataset):
       raise ValueError(
           "Invalid `data_split`: Only `train`, `val` or `test` is supported.")
 
-    self.raw_data = np.load(
-        os.path.join(self.data_dir, self.data_name % self.data_split)).item()
+    dxh_file_path = os.path.join(self.data_dir, self.data_name % self.data_split)
+    logging.info("DXH Dataset load path START: %s", dxh_file_path)
+    self.raw_data = np.load(dxh_file_path, allow_pickle=True).item()
+    logging.info("DXH Dataset load path END: %s", dxh_file_path)
+    print(f"DXH RAW_DATA[0] {self.raw_data}")
 
     self.labels, self.durations = self._load_labels()
 
@@ -149,6 +152,7 @@ class MimicDataset(torch.utils.data.Dataset):
 
   def resample(self):
     sample_list = self._sample_data()
+    print(f"DXH _sample_data output list {len(sample_list)}")
     logging.info("Resample dataset completed!")
     logging.info("First 10 records in the %s dataset:", self.data_split)
     for i in range(10):
@@ -268,7 +272,6 @@ class MimicDataset(torch.utils.data.Dataset):
           self.negatives, k=self.dataset_size // 2)
       sample_list += self.random_generator.choices(
           self.positives, k=self.dataset_size - self.dataset_size // 2)
-
       return sample_list
 
   def _load_labels(self):

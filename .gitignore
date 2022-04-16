@@ -12,3 +12,6 @@ run_eval.sh
 run_pipeline.sh
 run_train.sh
 run_tensorboard.sh
+raw_data/
+death_data/
+data*/

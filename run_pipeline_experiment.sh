@@ -14,6 +14,13 @@ mkdir -p ${LOG_DIR}
 rm -rf ./experiments/exp_name
 rm -rf ./logs/*
 
+# See section 5.3..
+# block size of 6 hours
+# length of history window to 48 hours or 8 blocks 
+# prediction window to 12 hours or 2 blocks
+# initial learning rate set to 0.001. 
+# We use a single hidden layer of size 32 in both LSTM and bidirectional LSTM experiments
+
 python3 code/main.py \
   --phase="pipeline" \
   --model_type="rnn" \
@@ -30,7 +37,7 @@ python3 code/main.py \
   --data_dir="${DATA_DIR}" \
   --target_label="${TARGET}" \
   --block_size=6 \
-  --history_window=56 \
+  --history_window=8 \
   --prediction_window=4 \
   --train_dataset_size=0 \
   --eval_dataset_size=0 \
