@@ -87,9 +87,11 @@ class MimicDataset(torch.utils.data.Dataset):
 
     dxh_file_path = os.path.join(self.data_dir, self.data_name % self.data_split)
     logging.info("DXH Dataset load path START: %s", dxh_file_path)
+
+    # DXH raw_data is in dictionary form
     self.raw_data = np.load(dxh_file_path, allow_pickle=True).item()
     logging.info("DXH Dataset load path END: %s", dxh_file_path)
-    print(f"DXH RAW_DATA[0] {self.raw_data}")
+    # print(f"DXH RAW_DATA[0] {self.raw_data}")
 
     self.labels, self.durations = self._load_labels()
 

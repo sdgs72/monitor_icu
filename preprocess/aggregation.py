@@ -9,11 +9,13 @@ from scipy.sparse import csr_matrix
 
 # Total HADM IDs: 22049
 VOC_SIZE = 4222  # added abnormal_high, abnormal_low flags, total 4225, excluding "Sepsis1", "Death0", "Death1"
+#VOC_SIZE = 3
 WINDOW_LENGTH = 1  # 1 hour per block
 SPLIT_DIR = "../data/"
 RAW_DATA = "../raw_data/MIMIC_FULL_BATCH.csv"
 VOCABULARY_FILE = "../data/events_vocabulary.csv"
 HADM_INFO_FILE = "../data/hadm_infos.csv"
+LOG_DEBUG_FILE = "../data/debug.csv"
 
 #TODO use EventStartTime or Time_To_Discharge
 #TIME_KEY = "Time_To_Discharge"
@@ -149,6 +151,7 @@ with open(RAW_DATA, "r") as fp:
       hadm_id = row["HADM_ID"]
       if hadm_id in hadm_length.keys():
         record = np.zeros((hadm_length[hadm_id], VOC_SIZE))
+        # print(f"DXH TUPLE NPZEROS SIZE {(hadm_length[hadm_id], VOC_SIZE)}")
 
     key = row["EventType"] + row["ITEMID2"]
     # print(f"DXH HELLLOOOOOO {row} \n")
@@ -162,6 +165,7 @@ with open(RAW_DATA, "r") as fp:
     except:
       # print("Events after discharge/death: %s" % row)
       pass
+    break
 
   if hadm_id in data_split["train"]:
     target = output["train"]
@@ -173,6 +177,13 @@ with open(RAW_DATA, "r") as fp:
     raise ValueError("Unknown data split.")
   if record.shape[0] != 0:
     target[hadm_id] = csr_matrix(record)
+
+print(f"DXH OUTPUT TRAIN FIRST LENGTH { len(output['train']) }")
+#print(f"DXH OUTPUT TRAIN FIRST LENGTH { output['train'] }")
+
+#print("DXH OUTPUT TRAIN 157197")
+#print(output["train"]["157197"])
+
 
 print("Saving train.")
 np.save("../data/train_interval%d_data" % WINDOW_LENGTH, output["train"])
