@@ -155,6 +155,8 @@ class MimicDataset(torch.utils.data.Dataset):
   def resample(self):
     sample_list = self._sample_data()
     print(f"DXH _sample_data output list {len(sample_list)}")
+    print(f"DXH _sample_data output list {sample_list}")
+
     logging.info("Resample dataset completed!")
     logging.info("First 10 records in the %s dataset:", self.data_split)
     for i in range(10):
@@ -253,11 +255,13 @@ class MimicDataset(torch.utils.data.Dataset):
     return full_negatives, full_positives
 
   def _sample_data(self):
+    print(f"******** DXH SAMPLING DATA START *********")
     if self.dataset_size == -1:
       logging.info("Using all possible candidates without sampling.")
       logging.warn(
           "WARN: The dataset might be extremely unbalanced and should be used in inference only."
       )
+      print(f"******** DXH SAMPLING DATA DONE BLOCK_1 *********")
       return self.negatives + self.positives
 
     elif self.dataset_size == 0:
@@ -266,7 +270,7 @@ class MimicDataset(torch.utils.data.Dataset):
       logging.info("  Use all %d positive samples", len(self.positives))
       logging.info("  Randomly choose %d negative samples from %d candidates",
                    len(self.positives), len(self.negatives))
-
+      print(f"******** DXH SAMPLING DATA DONE BLOCK_2 *********")
       return self.random_generator.sample(
           self.negatives, k=len(self.positives)) + self.positives
 
@@ -274,7 +278,8 @@ class MimicDataset(torch.utils.data.Dataset):
       sample_list = self.random_generator.choices(
           self.negatives, k=self.dataset_size // 2)
       sample_list += self.random_generator.choices(
-          self.positives, k=self.dataset_size - self.dataset_size // 2)
+          self.positives, k=self.dataset_size - self.dataset_size // 2)          
+      print(f"******** DXH SAMPLING DATA DONE BLOCK_3 *********")
       return sample_list
 
   def _load_labels(self):

@@ -91,7 +91,7 @@ left join mimiciiiv14.CHARTEVENTS vit on adm.HADM_ID = vit.HADM_ID
 where adm.DBSOURCE = 'metavision' and vit.ITEMID is not null
 #and adm.HADM_ID = 105017
     ) T
-order by HADM_ID,Time_to_Discharge
+order by HADM_ID,Time_to_Discharge --?? By default, the ORDER BY clause uses ASC if you don’t explicitly specify any option
 ;
 
 
