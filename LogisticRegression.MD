@@ -13,15 +13,14 @@ NOTE THAT Bilirubin level IS EXCLUDED IN THE LOGISTIC REGRESSION MODEL!
     <li> serum bicarbonate level (bicarbonate_score)  </li>
     <li> sodium level (sodium_score) </li>
     <li> potassium level (potassium_score) </li>
-    <li> urine output (urineoutput) </li>
     <li> pao2/fio2 ratio (pao2fio2_score) </li> 
-    <li> body temperature (temp_score)</li>
     <li> heart rate (hr_score) </li>
     <li> systolic blood pressure (sysbp_score) </li>
+    <li> body temperature (temp_score)</li>
     <li> Glasgow coma scale (gcs_score)</li>
     <li> chronic diseases (comorbidity_score) </li> 
     <li> admission type (admissiontype_score) </li>
-    <li> age (age_score) </li>
+    <li> age (age_score, assumed to be included) </li>
 </ol>
 
 

@@ -5,7 +5,12 @@
 select count(adm.HADM_ID) from mimiciiiv14.ADMISSIONS as adm; #58976
 select count(icu.HADM_ID) from mimiciiiv14.ICUSTAYS as icu; #61532
 select count(DISTINCT icu.HADM_ID) from mimiciiiv14.ICUSTAYS as icu; #57786
-select count(*) from ADMISSIONS where DBVERSION='metavision' #23620
+
+
+select count(DISTINCT HADM_ID) from ADMISSIONS_FULL_METAVISION where DBVERSION='metavision' #22049
+select count(DISTINCT HADM_ID) from ADMISSIONS_FULL_METAVISION afm where DEATHTIME is not null; #2323 -- unique admission
+select count(DISTINCT ICUSTAY_ID) from ADMISSIONS_FULL_METAVISION afm where DEATHTIME is not null; #23620 -- unqiue icu stays
+
 
 
 # check if there are any two ADM ID with different sources... (there is none!)
@@ -15,8 +20,9 @@ select i.HADM_ID, count(DISTINCT DBSOURCE) m, count(*) c from ICUSTAYS i group b
 
 # combine them too ADMISSIONS TABLE
 CREATE TABLE ICU_JOIN_TABLE as
-select adm.HADM_ID, adm.ADMITTIME, adm.DISCHTIME, adm.DEATHTIME, icu.DBSOURCE as DBSOURCE from mimiciiiv14.ADMISSIONS as adm 
-join mimiciiiv14.ICUSTAYS icu on adm.HADM_ID = icu.HADM_ID;
+select adm.*, icu.* from mimiciiiv14.admissions_backup as adm 
+join mimiciiiv14.ICUSTAYS icu on adm.HADM_ID = icu.HADM_ID
+where icu.DBSOURCE='metavision';
  
 
 # create my admissions table

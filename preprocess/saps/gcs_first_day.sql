@@ -112,7 +112,7 @@ with base as
   from gcs
 ) select ie.subject_id, ie.hadm_id, ie.icustay_id
 -- The minimum GCS is determined by the above row partition, we only join if IsMinGCS=1
-, GCS as mingcs
+, GCS as mingcs, ie.intime, ie.outime
 FROM `icustays` ie
 left join gcs_final gs
   on ie.icustay_id = gs.icustay_id
