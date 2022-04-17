@@ -4,6 +4,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score,average_precision_score,precision_recall_fscore_support,precision_recall_curve
 import numpy as np
 
+
 '''
 CSV_HEADERS of sapsii_feature_scores.csv
 "hadm_id","icustay_id","uo_score","wbc_score","bicarbonate_score","sodium_score",
@@ -136,6 +137,22 @@ def trainModel(train_features, train_label):
     clf = LogisticRegression(random_state=0, max_iter = MAX_ITER, penalty=PENALTY, class_weight=CLASS_WEIGHT).fit(train_features, train_label)
     return clf
 
+# not including Bilirubin level
+def sapsiiScore(features, label):
+    probabilities = []
+    for row in features:
+        score = np.sum(row)
+        logit = -1*7.7631+0.0737*score+0.9971*np.log(score+1)
+        mortality_rate = np.exp(logit)/(1+np.exp(logit))
+        probabilities.append(mortality_rate)
+
+    aurocscore = roc_auc_score(label, probabilities) #TODO first label or second label which one is positive
+    apscore = average_precision_score(label, probabilities, average='weighted')    
+
+    print(f"--------------------------------------------------------------------------")
+    print(f"SAPSII SCORE AUROC: {aurocscore} AUPRC: {apscore}")    
+    print(f"--------------------------------------------------------------------------")
+
 
 def evaluate(model, features, label, dataset_string="EVAL"):
     prediction = model.predict(features)
@@ -169,6 +186,7 @@ def important_weights(model):
 
 
 
+
 def main():
     processLabelsToDict()
     processFeatureToDict()
@@ -187,7 +205,7 @@ def main():
     # test dataset
     test_index, test_features, test_label = generateDataSet(TEST_SET_FILE)
     evaluate(model,test_features, test_label, "Test Dataset")
-
+    sapsiiScore(test_features, test_label)
 
     important_weights(model)
 

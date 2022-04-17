@@ -1,4 +1,17 @@
-E# Readme
+<h1> Instructions </h1>
+
+<h2> Running Baseline Model </h2>
+<hr>
+
+<ol>
+    <li> </li>
+</ol>
+
+
+
+<h2> Running RNN Model </h2>
+<hr>
+
 
 
 <h1> Remember </h1>
