@@ -227,6 +227,7 @@ class MimicDataset(torch.utils.data.Dataset):
       else:
         end_time = label_time
 
+      # DXH notice that start_time and end_time are in blocks here..
       for start_time in range(0, end_time - self.history_window + 1):
         history_window = (start_time, start_time + self.history_window)
         prediction_window = range(

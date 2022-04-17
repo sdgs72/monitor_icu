@@ -8,19 +8,20 @@ Paper mentioned "including" (serum is a blood liquid) <b>
 NOTE THAT Bilirubin level IS EXCLUDED IN THE LOGISTIC REGRESSION MODEL!
 </b>
 <ol>
-    <li> serum urea nitrogen level </li>
-    <li> white blood cells count </li>
-    <li> serum bicarbonate level </li>
-    <li> sodium level </li>
-    <li> potassium level </li>
-    <li> urine output </li>
-    <li> pao2/fio2 ratio </li> 
-    <li> body temperature </li>
-    <li> heart rate </li>
-    <li> systolic blood pressure </li>
-    <li> Glasgow coma scale </li>
-    <li> chronic diseases </li> 
-    <li> admission type </li>
+    <li> serum urea nitrogen level (uo_score) </li>
+    <li> white blood cells count (wbc_score) </li>
+    <li> serum bicarbonate level (bicarbonate_score)  </li>
+    <li> sodium level (sodium_score) </li>
+    <li> potassium level (potassium_score) </li>
+    <li> urine output (urineoutput) </li>
+    <li> pao2/fio2 ratio (pao2fio2_score) </li> 
+    <li> body temperature (temp_score)</li>
+    <li> heart rate (hr_score) </li>
+    <li> systolic blood pressure (sysbp_score) </li>
+    <li> Glasgow coma scale (gcs_score)</li>
+    <li> chronic diseases (comorbidity_score) </li> 
+    <li> admission type (admissiontype_score) </li>
+    <li> age (age_score) </li>
 </ol>
 
 

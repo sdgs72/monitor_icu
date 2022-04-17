@@ -5,7 +5,7 @@
 select count(adm.HADM_ID) from mimiciiiv14.ADMISSIONS as adm; #58976
 select count(icu.HADM_ID) from mimiciiiv14.ICUSTAYS as icu; #61532
 select count(DISTINCT icu.HADM_ID) from mimiciiiv14.ICUSTAYS as icu; #57786
-
+select count(*) from ADMISSIONS where DBVERSION='metavision' #23620
 
 
 # check if there are any two ADM ID with different sources... (there is none!)
