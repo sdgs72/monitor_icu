@@ -99,10 +99,10 @@ def processFeatureToDict():
 #Rebalance training set
 def resampleTrainingSet(hadm_index, features, labels):
     resample_count = np.sum(labels) # sum of positives(deaths)
-    #TODO randomize randomize
     new_hadm_index, new_features, new_labels = [], [] ,[]
     positive_count, negative_count = 0, 0
-    for idx, _ in enumerate(hadm_index):
+    permutes = np.random.permutation(len(hadm_index))
+    for idx in permutes:
         if labels[idx] == 1:
             new_hadm_index.append(hadm_index[idx])
             new_features.append(features[idx])
