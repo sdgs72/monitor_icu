@@ -96,6 +96,26 @@ def processFeatureToDict():
                 data_dict[key] = float(value)
             DATASET_FEATURES_DICT[row['hadm_id']] = data_dict
 
+#Rebalance training set
+def resampleTrainingSet(hadm_index, features, labels):
+    resample_count = np.sum(labels) # sum of positives(deaths)
+    #TODO randomize randomize
+    new_hadm_index, new_features, new_labels = [], [] ,[]
+    positive_count, negative_count = 0, 0
+    for idx, _ in enumerate(hadm_index):
+        if labels[idx] == 1:
+            new_hadm_index.append(hadm_index[idx])
+            new_features.append(features[idx])
+            new_labels.append(labels[idx])
+            positive_count+=1
+        else:
+            if negative_count < resample_count:
+                new_hadm_index.append(hadm_index[idx])
+                new_features.append(features[idx])
+                new_labels.append(labels[idx])
+                negative_count+=1
+    return new_hadm_index, new_features, new_labels
+
 def generateDataSet(file_path):
     hadm_index, features, labels = [], [], []
     with open(file_path, "r") as fp:
@@ -155,6 +175,8 @@ def main():
 
     # training
     train_index, train_features, train_label = generateDataSet(TRAIN_SET_FILE)
+    train_index, train_features, train_label = resampleTrainingSet(train_index, train_features, train_label)
+
     model = trainModel(train_features, train_label)
     evaluate(model,train_features, train_label, "Train Dataset")
 
