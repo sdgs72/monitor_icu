@@ -72,6 +72,10 @@ if True:
 
   hadm_length = {}
 
+  print(f"DXH DISCHARGE_TIME {discharge_time}")
+  print(f"DXH DEATH_TIME {death_time}")
+
+
   with open(HADM_INFO_FILE, "w") as fp:
     writer = csv.writer(fp)
     writer.writerow([
@@ -177,7 +181,6 @@ with open(RAW_DATA, "r") as fp:
 
       except Exception as e:
         print(f"CANNOT ADD BLOCK SUM {e}")
-      
         pass
 
   if hadm_id in data_split["train"]:

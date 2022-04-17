@@ -86,11 +86,10 @@ class MimicDataset(torch.utils.data.Dataset):
           "Invalid `data_split`: Only `train`, `val` or `test` is supported.")
 
     dxh_file_path = os.path.join(self.data_dir, self.data_name % self.data_split)
-    logging.info("DXH Dataset load path START: %s", dxh_file_path)
-
     # DXH raw_data is in dictionary form
     self.raw_data = np.load(dxh_file_path, allow_pickle=True).item()
-    logging.info("DXH Dataset load path END: %s", dxh_file_path)
+    logging.info("init: DXH file loaded for raw_data: %s", dxh_file_path)
+
     # print(f"DXH RAW_DATA[0] {self.raw_data}")
 
     self.labels, self.durations = self._load_labels()
@@ -208,10 +207,11 @@ class MimicDataset(torch.utils.data.Dataset):
   def _generate_candidates(self):
     full_negatives, full_positives = [], []
 
-    logging.info("Number of instances in labels: %d",
+    logging.info("_generate_candidates[211]: Number of instances in labels: %d",
                  len(self.labels[self.target_label]))
     for hadm_id, label_time in self.labels[self.target_label].items():
       # (mingdaz): bug fix. If event happens after death/discharge, discard.
+      logging.info(f"_generate_candidates: big looping -- ID:{hadm_id} Time:{label_time}")
       if label_time > self.durations[hadm_id]:
         continue
 
@@ -231,6 +231,7 @@ class MimicDataset(torch.utils.data.Dataset):
 
       # DXH notice that start_time and end_time are in blocks here..
       for start_time in range(0, end_time - self.history_window + 1):
+        logging.info(f"_generate_candidates: start history_window $$ ID:{hadm_id} StartTime:{start_time}")
         history_window = (start_time, start_time + self.history_window)
         prediction_window = range(
             start_time + self.history_window,
@@ -247,11 +248,12 @@ class MimicDataset(torch.utils.data.Dataset):
       full_positives += positives
 
       if len(set(full_negatives)) != len(full_negatives):
-        logging.warning("Duplicate samples in negative dataset.")
+        logging.warning("_generate_candidates: Duplicate samples in negative dataset.")
 
       if len(set(full_positives)) != len(full_positives):
-        logging.warning("Duplicate samples in positive dataset.")
+        logging.warning("_generate_candidates: Duplicate samples in positive dataset.")
 
+    logging.info(f"_generate_candidates: full_positives: {len(set(full_positives))} full_negatives: {len(set(full_negatives))}")
     return full_negatives, full_positives
 
   def _sample_data(self):
@@ -293,6 +295,7 @@ class MimicDataset(torch.utils.data.Dataset):
     # csv header:
     # hadmId,admissionDuration,dischargeTime,deathTime,sepsisTime,dataSplit
 
+    logging.info(f"_load_labels: DXH file loaded label_name {self.label_name}")
     with open(os.path.join(self.data_dir, self.label_name)) as fp:
       reader = csv.DictReader(fp)
       for row in reader:
