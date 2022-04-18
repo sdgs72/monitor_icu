@@ -12,7 +12,10 @@ VOC_SIZE = 4222  # added abnormal_high, abnormal_low flags, total 4225, excludin
 #VOC_SIZE = 3
 WINDOW_LENGTH = 1  # 1 hour per block
 SPLIT_DIR = "../data/"
-RAW_DATA = "../raw_data/MIMIC_FULL_BATCH.csv"
+#RAW_DATA = "../raw_data/MIMIC_FULL_BATCH.csv"
+#RAW_DATA = "../raw_data/CUSTOM_DEATH_BATCH.csv"
+#RAW_DATA = "../raw_data/EVENTS_ORDERED_NO_CHART.csv"
+RAW_DATA = "../raw_data/CUSTOM_MED_BATCH_ORDERED.csv"
 VOCABULARY_FILE = "../data/events_vocabulary.csv"
 HADM_INFO_FILE = "../data/hadm_infos.csv"
 LOG_DEBUG_FILE = "../data/debug.csv"
@@ -36,7 +39,8 @@ def get_data_splits(dir_path):
 
 data_split = get_data_splits(SPLIT_DIR)
 
-if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
+if True:
+#if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
   item_voc = set([])
   sepsis_time = {}
   death_time = {}
@@ -54,6 +58,8 @@ if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
       all_hadm_ids.add(hadm_id)
 
       time = int(row[TIME_KEY])
+      if (time < 0):
+        time *= -1
       #time = int(row["TIME"])
       if event == "Sepsis1":
         sepsis_time[hadm_id] = time
@@ -91,8 +97,11 @@ if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
       else:
         raise ValueError("Unknown data split.")
 
-      hadm_length[x] = max(0 if x not in discharge_time else discharge_time[x],
-                           0 if x not in death_time else death_time[x])
+      temp_discharge_time = 0 if x not in discharge_time else discharge_time[x]
+      temp_death_time = 0 if x not in death_time else death_time[x]
+      temp_discharge_time = max(temp_discharge_time, -1*temp_discharge_time)
+      temp_death_time = max(temp_death_time, -1*temp_death_time)
+      hadm_length[x] = max(temp_death_time, temp_discharge_time)
 
       writer.writerow([
           x,
@@ -165,7 +174,6 @@ with open(RAW_DATA, "r") as fp:
     except:
       # print("Events after discharge/death: %s" % row)
       pass
-    break
 
   if hadm_id in data_split["train"]:
     target = output["train"]
@@ -179,7 +187,7 @@ with open(RAW_DATA, "r") as fp:
     target[hadm_id] = csr_matrix(record)
 
 print(f"DXH OUTPUT TRAIN FIRST LENGTH { len(output['train']) }")
-#print(f"DXH OUTPUT TRAIN FIRST LENGTH { output['train'] }")
+print(f"DXH OUTPUT TRAIN FIRST LENGTH { output['train'] }")
 
 #print("DXH OUTPUT TRAIN 157197")
 #print(output["train"]["157197"])

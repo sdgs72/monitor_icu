@@ -97,6 +97,9 @@ class MimicDataset(torch.utils.data.Dataset):
     self.data = self._aggregate_raw_data()
     self.negatives, self.positives = self._generate_candidates()
 
+    if len(self.positives) == 0 or len(self.negatives) == 0:
+      raise AssertionError("No Positive or Negative Data generated please check....")
+
     self.sample_list = self.resample()
 
     if self.pca_dim:
@@ -171,7 +174,7 @@ class MimicDataset(torch.utils.data.Dataset):
     # aggregated_data = np.concatenate(list(self.data.values()), axis=0)
     aggregated_data = np.stack([np.sum(x, axis=0) for x in self.data.values()],
                                axis=0)
-    logging.info("Feature dimension before PCA: %d", aggregated_data.shape[1])
+    logging.info("Number of samples: %d, Feature dimension before PCA: %d", aggregated_data.shape[0],aggregated_data.shape[1])
     logging.info("Target dimension after PCA: %d", self.pca_dim)
 
     if self.phase == "training":
@@ -207,11 +210,11 @@ class MimicDataset(torch.utils.data.Dataset):
   def _generate_candidates(self):
     full_negatives, full_positives = [], []
 
-    logging.info("_generate_candidates[211]: Number of instances in labels: %d",
-                 len(self.labels[self.target_label]))
+    #logging.info("_generate_candidates[211]: Number of instances in labels: %d",
+    #             len(self.labels[self.target_label]))
     for hadm_id, label_time in self.labels[self.target_label].items():
       # (mingdaz): bug fix. If event happens after death/discharge, discard.
-      logging.info(f"_generate_candidates: big looping -- ID:{hadm_id} Time:{label_time}")
+      #logging.info(f"_generate_candidates: big looping -- ID:{hadm_id} Time:{label_time}")
       if label_time > self.durations[hadm_id]:
         continue
 
@@ -229,9 +232,12 @@ class MimicDataset(torch.utils.data.Dataset):
       else:
         end_time = label_time
 
+      dxh_finol = end_time - self.history_window + 1
+      #logging.info(f"_generate_candidates: debug calculating history window -- ID:{hadm_id} Time:{label_time} self.durations:{self.durations[hadm_id]} history window: {self.history_window} loop until: {dxh_finol} ")
+
       # DXH notice that start_time and end_time are in blocks here..
-      for start_time in range(0, end_time - self.history_window + 1):
-        logging.info(f"_generate_candidates: start history_window $$ ID:{hadm_id} StartTime:{start_time}")
+      for start_time in range(0, dxh_finol):
+        #logging.info(f"_generate_candidates: start history_window $$ ID:{hadm_id} StartTime:{start_time}")
         history_window = (start_time, start_time + self.history_window)
         prediction_window = range(
             start_time + self.history_window,
@@ -249,10 +255,11 @@ class MimicDataset(torch.utils.data.Dataset):
 
       if len(set(full_negatives)) != len(full_negatives):
         logging.warning("_generate_candidates: Duplicate samples in negative dataset.")
-
       if len(set(full_positives)) != len(full_positives):
         logging.warning("_generate_candidates: Duplicate samples in positive dataset.")
 
+    if(len(set(full_positives)) == 0):
+      logging.warning("_generate_candidates: ZERO SIZE!!!!!!!!!")
     logging.info(f"_generate_candidates: full_positives: {len(set(full_positives))} full_negatives: {len(set(full_negatives))}")
     return full_negatives, full_positives
 

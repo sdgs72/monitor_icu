@@ -55,6 +55,8 @@ if True:
       all_hadm_ids.add(hadm_id)
 
       time = int(row[TIME_KEY])
+      if (time < 0):
+        time *= -1
       #time = int(row["TIME"])
       if event == "Sepsis1":
         sepsis_time[hadm_id] = time
@@ -96,8 +98,11 @@ if True:
       else:
         raise ValueError("Unknown data split.")
 
-      hadm_length[x] = max(0 if x not in discharge_time else discharge_time[x],
-                           0 if x not in death_time else death_time[x])
+      temp_discharge_time = 0 if x not in discharge_time else discharge_time[x]
+      temp_death_time = 0 if x not in death_time else death_time[x]
+      temp_discharge_time = max(temp_discharge_time, -1*temp_discharge_time)
+      temp_death_time = max(temp_death_time, -1*temp_death_time)
+      hadm_length[x] = max(temp_death_time, temp_discharge_time)
 
       print(f"DXH setting hadm_length {x} {hadm_length[x]}")
 

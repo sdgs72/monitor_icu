@@ -48,4 +48,4 @@ python3 code/main.py \
   --upper_bound_factor=5 \
   --fix_eval_dataset_seed=3750 \
   --checkpoint_dir="./experiments" \
-  --experiment_name="${EXPERIMENT}" >> ${LOG_DIR}/${EXPERIMENT}_train.log 2>&1 &
+  --experiment_name="${EXPERIMENT}" >> ${LOG_DIR}/${EXPERIMENT}_train.log 2>&1

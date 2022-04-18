@@ -216,6 +216,10 @@ def train(configs):
 
   return
 
+def count_parameters(model): 
+  return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+
 
 def inference(configs):
   root_dir = os.path.join(FLAGS.checkpoint_dir, FLAGS.experiment_name)
@@ -260,6 +264,10 @@ def inference(configs):
       lr_pooling=configs["lr_pooling"],
       lr_history_window=configs["history_window"],
   )
+
+  dxh_count = count_parameters(model)
+  logging.info(f"DXH PARAMTER COUNT: {dxh_count}")
+  return 1  
 
   if FLAGS.eval_checkpoint:
     logging.info("Evaluate checkpoint %s", FLAGS.eval_checkpoint)
@@ -318,6 +326,8 @@ def inference(configs):
                                 "_eval_on_%s.joblib" % FLAGS.eval_data_split))
   logging.info("Evaluation on %d models complete.", len(model_checkpoints))
 
+  logging.info(f"DXH y_true: {y_true}")
+  logging.info(f"DXH y_score: {y_score}")
   return
 
 

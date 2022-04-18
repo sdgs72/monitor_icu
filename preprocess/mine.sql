@@ -20,7 +20,7 @@ select i.HADM_ID, count(DISTINCT DBSOURCE) m, count(*) c from ICUSTAYS i group b
 
 # combine them too ADMISSIONS TABLE
 CREATE TABLE ICU_JOIN_TABLE as
-select adm.*, icu.* from mimiciiiv14.admissions_backup as adm 
+select adm.*, icu.* from mimiciiiv14.admissions as adm 
 join mimiciiiv14.ICUSTAYS icu on adm.HADM_ID = icu.HADM_ID
 where icu.DBSOURCE='metavision';
  
@@ -31,17 +31,21 @@ select adm.HADM_ID, adm.ADMITTIME, adm.DISCHTIME, adm.DEATHTIME, adm.DBSOURCE as
 where adm.DBSOURCE = 'metavision';
 
 #DEATH_TABLE
-CREATE TABLE DEATH_EVENTS as
+drop table if exists DEATH_EVENTS;
+CREATE TABLE DEATH_EVENTS (
 select adm.HADM_ID,
-#adm.DISCHTIME,adm.DEATHTIME,
 'Death' as EventType,
 case when adm.DEATHTIME is not null then 1 else 0 end as ITEMID,
 case when adm.DEATHTIME is not null then 1 else 0 end as ITEMID2,
 adm.ADMITTIME as EventStartTime,
-timestampdiff(hour,adm.DISCHTIME,adm.DISCHTIME) as Time_to_Discharge
-from mimiciiiv14.ADMISSIONS adm;
+case when adm.DEATHTIME is not null then timestampdiff(hour,adm.ADMITTIME,adm.DEATHTIME) else timestampdiff(hour,adm.ADMITTIME,adm.DISCHTIME) end as Time_to_Discharge 
+from mimiciiiv14.ADMISSIONS_FULL_METAVISION adm
+);
+-- timestampdiff(hour,adm.ADMITTIME,adm.DISCHTIME) as Time_to_Discharge
+
 
 # LAB EVENTS < 3 mins
+drop table if exists LAB_EVENTS;
 CREATE TABLE LAB_EVENTS as
 select adm.HADM_ID,
 #adm.DISCHTIME,adm.DEATHTIME,
@@ -51,16 +55,17 @@ case
   else lab.ITEMID
 end as ITEMID2,
 lab.CHARTTIME as EventStartTime,
-timestampdiff(hour,adm.DISCHTIME,lab.CHARTTIME) as Time_to_Discharge
+timestampdiff(hour,lab.CHARTTIME, adm.DISCHTIME) as Time_to_Discharge
 from mimiciiiv14.ADMISSIONS adm
 left join mimiciiiv14.LABEVENTS lab on adm.HADM_ID = lab.HADM_ID;
 
 # MED EVENTS < 3mins
+drop table if exists MED_EVENTS;
 CREATE TABLE MED_EVENTS as
 select adm.HADM_ID,
 #adm.DISCHTIME,adm.DEATHTIME,
 'Med' as EventType, med.ITEMID, med.ITEMID as ITEMID2,med.STARTTIME as EventStartTime,
-timestampdiff(hour, adm.DISCHTIME, med.STARTTIME) as Time_to_Discharge
+timestampdiff(hour,med.STARTTIME,  adm.DISCHTIME) as Time_to_Discharge
 from mimiciiiv14.ADMISSIONS adm
 left join mimiciiiv14.INPUTEVENTS_MV med on adm.HADM_ID = med.HADM_ID;
 
@@ -111,6 +116,7 @@ select count(distinct ITEMID, ITEMID2) from MY_VIT_EVENTS; #2798
 
 
 # All joinedevents
+drop table if exists JOINED_EVENTS;
 CREATE TABLE JOINED_EVENTS (
 	HADM_ID mediumint unsigned NOT NULL,
 	EventType varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
@@ -123,4 +129,7 @@ CREATE TABLE JOINED_EVENTS (
 INSERT INTO JOINED_EVENTS select * from DEATH_EVENTS;
 INSERT INTO JOINED_EVENTS select * from LAB_EVENTS;
 INSERT INTO JOINED_EVENTS select * from MED_EVENTS;
-INSERT INTO JOINED_EVENTS select * from MY_VIT_EVENTS;
+-- INSERT INTO JOINED_EVENTS select * from MY_VIT_EVENTS;
+
+
+SELECT * from ky_mimic_events_v4 INTO OUTFILE 'MIMIC_FULL_BATCH.csv' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"' ESCAPED BY '' LINES TERMINATED BY '\n';

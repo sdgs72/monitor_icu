@@ -6,7 +6,9 @@ import os
 import json
 import sys
 
-from sklearn.externals import joblib
+#from sklearn.externals import joblib
+
+import joblib
 
 if len(sys.argv) != 2:
   print("Usage: python %s <file_path>" % sys.argv[0])
@@ -15,6 +17,7 @@ if len(sys.argv) != 2:
 data = joblib.load(sys.argv[1])
 
 for k, v in data.items():
-  print("hadm_id: %s" % k)
+  #print("hadm_id: %s" % k)
+  print(f"hadm_id: {k}")
   print(v)
   break
