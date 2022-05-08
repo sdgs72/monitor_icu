@@ -6,7 +6,7 @@ TARGET="death"
 
 EXPERIMENT="exp_name"
 
-DATA_DIR="./data"
+DATA_DIR="./preprocess/data"
 LOG_DIR="./logs"
 
 mkdir -p ${LOG_DIR}
@@ -14,7 +14,7 @@ mkdir -p ${LOG_DIR}
 rm -rf ./experiments/exp_name
 rm -rf ./logs/*
 
-python3 code/main.py \
+python code/main.py \
   --phase="pipeline" \
   --model_type="rnn" \
   --rnn_type="lstm" \

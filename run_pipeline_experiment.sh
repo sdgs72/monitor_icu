@@ -4,14 +4,14 @@ set -x
 
 TARGET="death"
 
-EXPERIMENT="exp_name"
+EXPERIMENT="balanced_selfattention"
 
-DATA_DIR="./data"
+DATA_DIR="./preprocess/data"
 LOG_DIR="./logs"
 
 mkdir -p ${LOG_DIR}
 
-rm -rf ./experiments/exp_name
+rm -rf ./experiments/${EXPERIMENT}
 rm -rf ./logs/*
 
 # See section 5.3..
@@ -21,12 +21,12 @@ rm -rf ./logs/*
 # initial learning rate set to 0.001. 
 # We use a single hidden layer of size 32 in both LSTM and bidirectional LSTM experiments
 
-python3 code/main.py \
+python code/main.py \
   --phase="pipeline" \
-  --model_type="rnn" \
+  --model_type="lr" \
   --rnn_type="lstm" \
-  --rnn_bidirectional \
-  --nouse_attention \
+  --rnn_bidirectional="False" \
+  --use_attention \
   --batch_size=128 \
   --input_size=256 \
   --rnn_hidden_size=256 \
@@ -38,9 +38,9 @@ python3 code/main.py \
   --target_label="${TARGET}" \
   --block_size=6 \
   --history_window=8 \
-  --prediction_window=4 \
+  --prediction_window=2 \
   --train_dataset_size=0 \
-  --eval_dataset_size=0 \
+  --eval_dataset_size=-1 \
   --rnn_layers=1 \
   --rnn_dropout=0 \
   --standardize \
@@ -48,4 +48,4 @@ python3 code/main.py \
   --upper_bound_factor=5 \
   --fix_eval_dataset_seed=3750 \
   --checkpoint_dir="./experiments" \
-  --experiment_name="${EXPERIMENT}" >> ${LOG_DIR}/${EXPERIMENT}_train.log 2>&1
+  --experiment_name="${EXPERIMENT}" >> ${LOG_DIR}/${EXPERIMENT}_train.log 2>&1 

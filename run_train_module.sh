@@ -5,7 +5,7 @@ set -x
 TARGET="death"
 EXPERIMENT="debug1"
 
-DATA_DIR="./data"
+DATA_DIR="./preprocess/data"
 LOG_DIR="./debug/logs"
 
 rm -rf ${LOG_DIR}
