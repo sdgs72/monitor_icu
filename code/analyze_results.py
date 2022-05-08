@@ -6,8 +6,6 @@ import os
 import json
 import sys
 
-#from sklearn.externals import joblib
-
 import joblib
 
 if len(sys.argv) != 2:
@@ -17,7 +15,6 @@ if len(sys.argv) != 2:
 data = joblib.load(sys.argv[1])
 
 for k, v in data.items():
-  #print("hadm_id: %s" % k)
-  print(f"hadm_id: {k}")
+  print("hadm_id: %s" % k)
   print(v)
   break
