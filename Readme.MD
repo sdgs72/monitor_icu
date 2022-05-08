@@ -1,5 +1,10 @@
 <h1> Instructions </h1>
 
+<h2> Original paper </h2>
+
+<code> Yu, K., Zhang, M., Cui, T., & Hauskrecht, M. (2020). Monitoring ICU Mortality Risk with A Long Short-Term Memory Recurrent Neural Network. Pacific Symposium on Biocomputing. Pacific Symposium on Biocomputing, 25, 103–114. </code>
+
+
 <h2> Prerequirements </h2>
 <hr>
 <ul>
@@ -7,6 +12,7 @@
     <li> Python 3.9 and pip3 </li>
     <li> OS that can run sh scripts</li>
     <li> DBViewer (recommended for easy SQL to CSV imports) </li>
+    <li> run the following to install all python3 libraries required <code> pip3 install -r requirements.txt </code>
 </ul>
 
 
@@ -65,4 +71,40 @@ Make sure that all the preprocessing code was run succesfully, afterwards you ju
 <h2> Results </h2>
 <hr>
 
+<table>
+    <tr>
+        <th> Model </th>
+        <th> AUROC </th>    
+        <th> AUPRC </th>
+    </tr>
+    <tr>
+        <td> Baseline </td>
+        <td> 0.808 </td>
+        <td> 0.410 </td>
+    </tr>
+    <tr>
+        <td> Baseline </td>
+        <td> 0.7767 </td>
+        <td> 0.1711 </td>
+    </tr>
+    <tr>
+        <td> Baseline </td>
+        <td> 0.8421 </td>
+        <td> 0.2311 </td>
+    </tr>
+    <tr>
+        <td> Baseline </td>
+        <td> 0.8749 </td>
+        <td> 0.2782 </td>
+    </tr>
+</table>
+
 <h2>
+
+
+<h2> Code References </h2>
+
+<ol>
+    <li> https://github.com/zhmd/monitor_icu </li>
+    <li> https://github.com/MIT-LCP/mimic-code/ </li>
+</ol>
