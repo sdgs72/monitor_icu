@@ -60,7 +60,7 @@ Make sure that all the preprocessing code was run succesfully, afterwards you ju
 
 
 
-<h2> Running Attention and RNN Model </h2>
+<h2> Running Self Attention and LSTM Models </h2>
 <hr>
 
 
@@ -71,6 +71,8 @@ Make sure that all the preprocessing code was run succesfully, afterwards you ju
 <h2> Results </h2>
 <hr>
 
+
+<h3> Results using balanced training set </h3>
 <table>
     <tr>
         <th> Model </th>
@@ -83,21 +85,52 @@ Make sure that all the preprocessing code was run succesfully, afterwards you ju
         <td> 0.410 </td>
     </tr>
     <tr>
-        <td> Baseline </td>
+        <td> Self Attention </td>
         <td> 0.7767 </td>
         <td> 0.1711 </td>
     </tr>
     <tr>
-        <td> Baseline </td>
+        <td> Unidirectional LSTM </td>
         <td> 0.8421 </td>
         <td> 0.2311 </td>
     </tr>
     <tr>
-        <td> Baseline </td>
+        <td> BiDirectional LSTM </td>
         <td> 0.8749 </td>
         <td> 0.2782 </td>
     </tr>
 </table>
+
+
+<h3> Results using imbalanced training set </h3>
+<table>
+    <tr>
+        <th> Model </th>
+        <th> AUROC </th>    
+        <th> AUPRC </th>
+    </tr>
+    <tr>
+        <td> Self Attention </td>
+        <td> 0.7626 </td>
+        <td> 0.1084 </td>
+    </tr>
+    <tr>
+        <td> Unidirectional LSTM </td>
+        <td> 0.7832 </td>
+        <td> 0.1549 </td>
+    </tr>
+    <tr>
+        <td> BiDirectional LSTM </td>
+        <td> 0.8709 </td>
+        <td> 0.1767 </td>
+    </tr>
+</table>
+
+Pickled model can be retrieved here:
+- attention model = 
+- unidirectional LSTM(balanced) = 
+- bidirectional LSTM(balanced)
+
 
 <h2>
 
