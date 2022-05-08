@@ -81,7 +81,7 @@ bidirectional LSTM(unbalanced) = <code> ./run_pipeline_bidirectional_lstm_unbala
 </ul>
 
 
-These are the additional experiments we performed where we train the model w/o resampling the training dataset to ensure balance (without downsampling the dataset currently we have a ratio of 90% negative and 10% positive).
+These are the additional experiments we performed where we train the model by resampling the training dataset to ensure balance (without downsampling the dataset currently we have a ratio of 90% negative and 10% positive).
 
 <ul>
 <li>
