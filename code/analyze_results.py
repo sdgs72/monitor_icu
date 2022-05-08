@@ -6,7 +6,7 @@ import os
 import json
 import sys
 
-from sklearn.externals import joblib
+import joblib
 
 if len(sys.argv) != 2:
   print("Usage: python %s <file_path>" % sys.argv[0])

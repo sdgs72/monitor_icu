@@ -11,12 +11,12 @@ from scipy.sparse import csr_matrix
 VOC_SIZE = 4222  # added abnormal_high, abnormal_low flags, total 4225, excluding "Sepsis1", "Death0", "Death1"
 #VOC_SIZE = 3
 WINDOW_LENGTH = 1  # 1 hour per block
-SPLIT_DIR = "./data/"
-RAW_DATA = "./raw_data/MIMIC_FULL_BATCH.csv"
-VOCABULARY_FILE = "./data/events_vocabulary.csv"
-HADM_INFO_FILE = "./data/hadm_infos.csv"
-LOG_DEBUG_FILE = "./data/debug.csv"
-headerList = ['HADM_ID', 'EventType', 'ITEMID', 'ITEMID2', 'EventStartTime', 'Time_to_Discharge']
+SPLIT_DIR = "../data/"
+RAW_DATA = "../raw_data/MIMIC_FULL_BATCH_DEBUG.csv"
+VOCABULARY_FILE = "../data/events_vocabulary.csv"
+HADM_INFO_FILE = "../data/hadm_infos.csv"
+LOG_DEBUG_FILE = "../data/debug.csv"
+
 #TODO use EventStartTime or Time_To_Discharge
 #TIME_KEY = "Time_To_Discharge"
 TIME_KEY = 'Time_to_Discharge'
@@ -36,7 +36,8 @@ def get_data_splits(dir_path):
 
 data_split = get_data_splits(SPLIT_DIR)
 
-if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
+if True:
+#if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
   item_voc = set([])
   sepsis_time = {}
   death_time = {}
@@ -45,18 +46,15 @@ if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
   all_hadm_ids = set([])
 
   with open(RAW_DATA, "r") as fp:
-    reader = csv.DictReader(fp, delimiter=',', fieldnames=headerList)
+    reader = csv.DictReader(fp)
     for row in tqdm(reader):
       event = row["EventType"] + row["ITEMID2"]
       item_voc.add(event)
 
       hadm_id = row["HADM_ID"]
       all_hadm_ids.add(hadm_id)
-      try:
-        time = int(row[TIME_KEY])  
-      except:
-        print(f"Skipping unparsable time... {row[TIME_KEY]}") #skip for title
-        continue
+
+      time = int(row[TIME_KEY])
       if (time < 0):
         time *= -1
       #time = int(row["TIME"])
@@ -76,6 +74,10 @@ if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
 
   hadm_length = {}
 
+  print(f"DXH DISCHARGE_TIME {discharge_time}")
+  print(f"DXH DEATH_TIME {death_time}")
+
+
   with open(HADM_INFO_FILE, "w") as fp:
     writer = csv.writer(fp)
     writer.writerow([
@@ -94,15 +96,15 @@ if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
       elif x in data_split["test"]:
         x_split = "test"
       else:
-        print(f"Unknown data split 1 {x}") #skip for title
-        continue
-        #raise ValueError("Unknown data split.")
+        raise ValueError("Unknown data split.")
 
       temp_discharge_time = 0 if x not in discharge_time else discharge_time[x]
       temp_death_time = 0 if x not in death_time else death_time[x]
       temp_discharge_time = max(temp_discharge_time, -1*temp_discharge_time)
       temp_death_time = max(temp_death_time, -1*temp_death_time)
       hadm_length[x] = max(temp_death_time, temp_discharge_time)
+
+      print(f"DXH setting hadm_length {x} {hadm_length[x]}")
 
       writer.writerow([
           x,
@@ -118,9 +120,13 @@ events_dict = {}
 
 with open(VOCABULARY_FILE, "r") as fp:
   reader = csv.reader(fp)
-  for i, x in enumerate(reader): 
+  for i, x in enumerate(reader):
     events_vocabulary[x[0].strip()] = i
     events_dict[i] = x[0].strip()
+
+
+print(f"DXH HADM_LENGTH_BEFORE SETUP {hadm_length}")
+
 
 hadm_length = {}
 with open(HADM_INFO_FILE, "r") as fp:
@@ -141,18 +147,16 @@ with open(HADM_INFO_FILE, "r") as fp:
 
 output = collections.defaultdict(dict)
 
+print(f"DXH HADM_LENGTH_AFTER SETUP {hadm_length}")
+
 with open(RAW_DATA, "r") as fp:
-  reader = csv.DictReader(fp, delimiter=',', fieldnames=headerList)
+  reader = csv.DictReader(fp)
   hadm_id = None
   record = None
-  for row in tqdm(reader):    
-    try:
-      a = int(row["HADM_ID"])
-    except:
-      print(f"Skipping string hadm_id {row['HADM_ID']}") #skip for title
-      continue
-      
-    if row["HADM_ID"] != hadm_id:
+  for row in tqdm(reader):
+    print(f"---- DXH PROCESSING {row} ----")
+    if row["HADM_ID"] != hadm_id: #--- if different id
+      print(f"PROCESSING DIFFERENT HADM_ID {hadm_id} NEW hadm_id {row['HADM_ID']}")
       if hadm_id:
         if hadm_id in data_split["train"]:
           target = output["train"]
@@ -161,64 +165,51 @@ with open(RAW_DATA, "r") as fp:
         elif hadm_id in data_split["test"]:
           target = output["test"]
         else:
-          print(row)
-          print(f"Unknown data split 2 {hadm_id}") #skip for title
-          continue
-          #raise ValueError("Unknown data split.")
+          raise ValueError("Unknown data split.")
         if record.shape[0] != 0:
+          print(f"DXH CSR_MATRIX SET TO TARGET[hadm_id] for {hadm_id} NEW hadm_id {row['HADM_ID']}")
           target[hadm_id] = csr_matrix(record)
       hadm_id = row["HADM_ID"]
       if hadm_id in hadm_length.keys():
+        print(f"DXH CREATE ZEROS FOR {row['HADM_ID']} With Size {hadm_length[hadm_id]} {VOC_SIZE}")
         record = np.zeros((hadm_length[hadm_id], VOC_SIZE))
         # print(f"DXH TUPLE NPZEROS SIZE {(hadm_length[hadm_id], VOC_SIZE)}")
+    else: # same_id
+      key = row["EventType"] + row["ITEMID2"]
+      block = int(row[TIME_KEY]) // WINDOW_LENGTH
+      if key not in events_vocabulary:
+        #print("%s not in events vocabulary." % key)
+        continue
+      try:
+        print(f"*** DXH ADDING BLOCK FOR {key} {block} {row['HADM_ID']} ***")
+        record[block, events_vocabulary[key]] += 1
 
-    key = row["EventType"] + row["ITEMID2"]
-    # print(f"DXH HELLLOOOOOO {row} \n")
-    try:
-      a = int(row[TIME_KEY])
-    except:
-      print(f"Skipping unparsable time... {row[TIME_KEY]}") #skip for title
-      continue
+      except Exception as e:
+        print(f"CANNOT ADD BLOCK SUM {e}")
+        pass
 
-    block = int(row[TIME_KEY]) // WINDOW_LENGTH
-    if key not in events_vocabulary:
-      continue
-      # print("%s not in events vocabulary." % key)
-
-    try:
-      record[block, events_vocabulary[key]] += 1
-    except:
-      # print("Events after discharge/death: %s" % row)
-      pass
-    # break
-  
   if hadm_id in data_split["train"]:
     target = output["train"]
-    
   elif hadm_id in data_split["val"]:
     target = output["val"]
   elif hadm_id in data_split["test"]:
     target = output["test"]
   else:
-    print(f"Unknown data split 3 {hadm_id}") #skip for title
-    pass
-    #raise ValueError("Unknown data split.")
+    raise ValueError("Unknown data split.")
   if record.shape[0] != 0:
     target[hadm_id] = csr_matrix(record)
 
 print(f"DXH OUTPUT TRAIN FIRST LENGTH { len(output['train']) }")
-#print(f"DXH OUTPUT TRAIN FIRST LENGTH { output['train'] }")
-
+print(f"DXH OUTPUT PRINT { output }")
 #print("DXH OUTPUT TRAIN 157197")
-
+#print(output["train"]["157197"])
 
 
 print("Saving train.")
-
-np.save("./data/train_interval%d_data" % WINDOW_LENGTH, output["train"])
+np.save("../data/train_interval%d_data" % WINDOW_LENGTH, output["train"])
 
 print("Saving test.")
-np.save("./data/test_interval%d_data" % WINDOW_LENGTH, output["test"])
+np.save("../data/test_interval%d_data" % WINDOW_LENGTH, output["test"])
 
 print("Saving val.")
-np.save("./data/val_interval%d_data" % WINDOW_LENGTH, output["val"])
+np.save("../data/val_interval%d_data" % WINDOW_LENGTH, output["val"])
