@@ -63,7 +63,35 @@ Make sure that all the preprocessing code was run succesfully, afterwards you ju
 
 <h2> Running Self Attention and LSTM Models </h2>
 <hr>
-We have two seperate instructions for the baseline and other models because the features that they are using are completely different.
+We have two seperate instructions for the baseline and other models because the features that they are using are completely different. Make sure that all the preprocessing steps were successful before. We created seperate run files for each experiment we did.
+
+See the list below for instructions to run the pipeline for a specific model
+
+<ul>
+<li>
+self attention model(balanced) =  <code> ./run_pipeline_self_attention_balanced.sh </code>
+</li>
+<li>
+unidirectional LSTM(balanced) = <code> ./run_pipeline_unidirectional_lstm_balanced.sh </code>
+</li>
+<li>
+bidirectional LSTM(balanced) = <code> ./run_pipeline_bidirectional_lstm_unbalanced </code>
+</li>
+</ul>
+
+These are the additional experiments we performed where we train the model w/o resampling the training dataset to ensure balance (without rebalancing the dataset currently we have a ratio of 90% negative and 10% positive).
+<ul>
+<li>
+self attention model(unbalanced) = <code> ./run_pipeline_self_attention_unbalanced.sh </code>
+</li>
+<li>
+unidirectional LSTM(unbalanced) = <code> ./run_pipeline_unidirectional_lstm_unbalanced.sh </code>
+</li>
+<li>
+bidirectional LSTM(unbalanced) = <code> ./run_pipeline_bidirectional_lstm_unbalanced </code>
+</li>
+</ul>
+
 
 
 
@@ -147,7 +175,7 @@ bidirectional LSTM(unbalanced) = https://drive.google.com/drive/folders/1zmrE0Gt
 </li>
 </ul>
 
-To run eval download the entire folder of the model and copy paste it to folder named <code> experiments </code> in the root folder. Open the <code> run_eval_module.sh </code> and change the <code> eval_checkpoint </code> parameter to your downloaded folder path which contains the .model file. (We used the best F1 score model) after you changed the parameter you should be able to run the script by doing <code> ./run_eval_module.sh </sh>
+To run eval download the entire folder of the model and copy paste it to folder named <code> experiments </code> in the root folder. Open the <code> run_eval_module.sh </code> and change the <code> eval_checkpoint </code> parameter to your downloaded folder path which contains the .model file. (We used the best F1 score model) after you changed the parameter you should be able to run the script by doing <code> ./run_eval_module.sh </code>
 
 
 <h2> Code References </h2>
