@@ -56,14 +56,14 @@
 
 <h2> Running Baseline Model </h2>
 <hr>
+The baseline model are really quick to train, they took less than 2 minutes in 16GB ram personal laptop.
 Make sure that all the preprocessing code was run succesfully, afterwards you just need to go to the <code> baseline </code> folder and run the following <code> python3 main.py </code>
 
 
 
 <h2> Running Self Attention and LSTM Models </h2>
 <hr>
-
-
+We have two seperate instructions for the baseline and other models because the features that they are using are completely different.
 
 
 
@@ -102,7 +102,7 @@ Make sure that all the preprocessing code was run succesfully, afterwards you ju
 </table>
 
 
-<h3> Results using imbalanced training set </h3>
+<h3> Results using imbalanced training set(Additional Experiments) </h3>
 <table>
     <tr>
         <th> Model </th>
@@ -126,13 +126,28 @@ Make sure that all the preprocessing code was run succesfully, afterwards you ju
     </tr>
 </table>
 
-Pickled model can be retrieved here:
-- attention model = 
-- unidirectional LSTM(balanced) = 
-- bidirectional LSTM(balanced)
+<h3> Pickled models that are long to train can be retrieved here(file size a bit too big 100mb each): </h3>
 
+<ul>
+<li>
+self attention model(balanced) = https://drive.google.com/drive/folders/1zmrE0Gtmz61vPWDfbkuWPvQEpWnV-ruz?usp=sharing
+</li>
+<li>
+unidirectional LSTM(balanced) = https://drive.google.com/drive/folders/1zmrE0Gtmz61vPWDfbkuWPvQEpWnV-ruz?usp=sharing
+</li>
+<li>
+bidirectional LSTM(balanced) = https://drive.google.com/drive/folders/1zmrE0Gtmz61vPWDfbkuWPvQEpWnV-ruz?usp=sharing
+</li>
+<li>
+self attention model(unbalanced) = https://drive.google.com/drive/folders/1zmrE0Gtmz61vPWDfbkuWPvQEpWnV-ruz?usp=sharing
+</li>
+unidirectional LSTM(unbalanced) = https://drive.google.com/drive/folders/1JM2i2DtflIlpEBeTuBnhEGa3oKUgySdO?usp=sharing
+<li>
+bidirectional LSTM(unbalanced) = https://drive.google.com/drive/folders/1zmrE0Gtmz61vPWDfbkuWPvQEpWnV-ruz?usp=sharing 
+</li>
+</ul>
 
-<h2>
+To run eval download the entire folder of the model and copy paste it to folder named <code> experiments </code> in the root folder. Open the <code> run_eval_module.sh </code> and change the <code> eval_checkpoint </code> parameter to your downloaded folder path which contains the .model file. (We used the best F1 score model) after you changed the parameter you should be able to run the script by doing <code> ./run_eval_module.sh </sh>
 
 
 <h2> Code References </h2>
