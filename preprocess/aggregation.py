@@ -11,12 +11,12 @@ from scipy.sparse import csr_matrix
 VOC_SIZE = 4222  # added abnormal_high, abnormal_low flags, total 4225, excluding "Sepsis1", "Death0", "Death1"
 #VOC_SIZE = 3
 WINDOW_LENGTH = 1  # 1 hour per block
-SPLIT_DIR = "../data/"
-RAW_DATA = "../raw_data/MIMIC_FULL_BATCH.csv"
-VOCABULARY_FILE = "../data/events_vocabulary.csv"
-HADM_INFO_FILE = "../data/hadm_infos.csv"
-LOG_DEBUG_FILE = "../data/debug.csv"
-
+SPLIT_DIR = "./data/"
+RAW_DATA = "./raw_data/MIMIC_FULL_BATCH.csv"
+VOCABULARY_FILE = "./data/events_vocabulary.csv"
+HADM_INFO_FILE = "./data/hadm_infos.csv"
+LOG_DEBUG_FILE = "./data/debug.csv"
+headerList = ['HADM_ID', 'EventType', 'ITEMID', 'ITEMID2', 'EventStartTime', 'Time_to_Discharge']
 #TODO use EventStartTime or Time_To_Discharge
 #TIME_KEY = "Time_To_Discharge"
 TIME_KEY = 'Time_to_Discharge'
@@ -45,7 +45,7 @@ if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
   all_hadm_ids = set([])
 
   with open(RAW_DATA, "r") as fp:
-    reader = csv.DictReader(fp)
+    reader = csv.DictReader(fp, delimiter=',', fieldnames=headerList)
     for row in tqdm(reader):
       event = row["EventType"] + row["ITEMID2"]
       item_voc.add(event)
@@ -54,6 +54,8 @@ if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
       all_hadm_ids.add(hadm_id)
 
       time = int(row[TIME_KEY])
+      if (time < 0):
+        time *= -1
       #time = int(row["TIME"])
       if event == "Sepsis1":
         sepsis_time[hadm_id] = time
@@ -91,8 +93,11 @@ if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
       else:
         raise ValueError("Unknown data split.")
 
-      hadm_length[x] = max(0 if x not in discharge_time else discharge_time[x],
-                           0 if x not in death_time else death_time[x])
+      temp_discharge_time = 0 if x not in discharge_time else discharge_time[x]
+      temp_death_time = 0 if x not in death_time else death_time[x]
+      temp_discharge_time = max(temp_discharge_time, -1*temp_discharge_time)
+      temp_death_time = max(temp_death_time, -1*temp_death_time)
+      hadm_length[x] = max(temp_death_time, temp_discharge_time)
 
       writer.writerow([
           x,
@@ -108,7 +113,7 @@ events_dict = {}
 
 with open(VOCABULARY_FILE, "r") as fp:
   reader = csv.reader(fp)
-  for i, x in enumerate(reader):
+  for i, x in enumerate(reader): 
     events_vocabulary[x[0].strip()] = i
     events_dict[i] = x[0].strip()
 
@@ -132,7 +137,7 @@ with open(HADM_INFO_FILE, "r") as fp:
 output = collections.defaultdict(dict)
 
 with open(RAW_DATA, "r") as fp:
-  reader = csv.DictReader(fp)
+  reader = csv.DictReader(fp, delimiter=',', fieldnames=headerList)
   hadm_id = None
   record = None
   for row in tqdm(reader):
@@ -165,10 +170,11 @@ with open(RAW_DATA, "r") as fp:
     except:
       # print("Events after discharge/death: %s" % row)
       pass
-    break
-
+    # break
+  
   if hadm_id in data_split["train"]:
     target = output["train"]
+    
   elif hadm_id in data_split["val"]:
     target = output["val"]
   elif hadm_id in data_split["test"]:
@@ -182,14 +188,15 @@ print(f"DXH OUTPUT TRAIN FIRST LENGTH { len(output['train']) }")
 #print(f"DXH OUTPUT TRAIN FIRST LENGTH { output['train'] }")
 
 #print("DXH OUTPUT TRAIN 157197")
-#print(output["train"]["157197"])
+
 
 
 print("Saving train.")
-np.save("../data/train_interval%d_data" % WINDOW_LENGTH, output["train"])
+
+np.save("./data/train_interval%d_data" % WINDOW_LENGTH, output["train"])
 
 print("Saving test.")
-np.save("../data/test_interval%d_data" % WINDOW_LENGTH, output["test"])
+np.save("./data/test_interval%d_data" % WINDOW_LENGTH, output["test"])
 
 print("Saving val.")
-np.save("../data/val_interval%d_data" % WINDOW_LENGTH, output["val"])
+np.save("./data/val_interval%d_data" % WINDOW_LENGTH, output["val"])
