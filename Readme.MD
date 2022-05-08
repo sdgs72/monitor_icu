@@ -67,19 +67,7 @@ We have two seperate instructions for the baseline and other models because the 
 
 See the list below for instructions to run the pipeline for a specific model
 
-<ul>
-<li>
-self attention model(balanced) =  <code> ./run_pipeline_self_attention_balanced.sh </code>
-</li>
-<li>
-unidirectional LSTM(balanced) = <code> ./run_pipeline_unidirectional_lstm_balanced.sh </code>
-</li>
-<li>
-bidirectional LSTM(balanced) = <code> ./run_pipeline_bidirectional_lstm_unbalanced </code>
-</li>
-</ul>
 
-These are the additional experiments we performed where we train the model w/o resampling the training dataset to ensure balance (without rebalancing the dataset currently we have a ratio of 90% negative and 10% positive).
 <ul>
 <li>
 self attention model(unbalanced) = <code> ./run_pipeline_self_attention_unbalanced.sh </code>
@@ -93,14 +81,30 @@ bidirectional LSTM(unbalanced) = <code> ./run_pipeline_bidirectional_lstm_unbala
 </ul>
 
 
+These are the additional experiments we performed where we train the model w/o resampling the training dataset to ensure balance (without downsampling the dataset currently we have a ratio of 90% negative and 10% positive).
 
+<ul>
+<li>
+self attention model(balanced) =  <code> ./run_pipeline_self_attention_balanced.sh </code>
+</li>
+<li>
+unidirectional LSTM(balanced) = <code> ./run_pipeline_unidirectional_lstm_balanced.sh </code>
+</li>
+<li>
+bidirectional LSTM(balanced) = <code> ./run_pipeline_bidirectional_lstm_unbalanced </code>
+</li>
+</ul>
+
+When the model is running you can see the logs in the <code> logs </code> directory and the models will be saved in the <code> experiments </code> folder
+
+Training will take roughly 1-4 hours depending on the complexity and data sample(balanced dataset downsamples making training much faster).
 
 
 <h2> Results </h2>
 <hr>
 
 
-<h3> Results using balanced training set </h3>
+<h3> Results using unbalanced training set </h3>
 <table>
     <tr>
         <th> Model </th>
@@ -130,7 +134,7 @@ bidirectional LSTM(unbalanced) = <code> ./run_pipeline_bidirectional_lstm_unbala
 </table>
 
 
-<h3> Results using imbalanced training set(Additional Experiments) </h3>
+<h3> Results using balanced training set(Additional Experiments) </h3>
 <table>
     <tr>
         <th> Model </th>
