@@ -45,7 +45,7 @@
     <li> export the sapsii_score_maxed table into a CSV file using DBViewer or via mysql commands to a file in the directory /raw_data/sapsii_feature_scores_maxed.csv this data will be the features for our baseline model </li>
     <li> We will next run the sql scripts to export data for our attention and RNN models. go to the ./preprocess/ folder </li>
     <li> run the extract_final_mimic.sql file (this can take ~8-12 hours depending on your CPU spec</li>
-    <li> extract the KY_MIMIC_EVENTS_V4 table into a CSV file in the directory /raw_data/MIMIC_FULL_BATCH.csv</li>
+    <li> extract the ORDERED_JOINT_EVENTS table into a CSV file in the directory /raw_data/MIMIC_FULL_BATCH.csv</li>
     <li> extract the KY_ADM_LENGTH table into a CSV file in the directory /raw_data/MIMIC_ADM_INFO.csv </li>
     <li> go to the /preprocess folder again and run <code> python3 split_data.py </code> </li>
     <li> go to the /preprocess folder again and run <code> python3 aggregation.py </code> </li>

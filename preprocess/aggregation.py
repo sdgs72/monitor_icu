@@ -52,8 +52,11 @@ if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
 
       hadm_id = row["HADM_ID"]
       all_hadm_ids.add(hadm_id)
-
-      time = int(row[TIME_KEY])
+      try:
+        time = int(row[TIME_KEY])  
+      except:
+        print(f"Skipping unparsable time... {row[TIME_KEY]}") #skip for title
+        continue
       if (time < 0):
         time *= -1
       #time = int(row["TIME"])
@@ -91,7 +94,9 @@ if not os.path.exists(VOCABULARY_FILE) or not os.path.exists(HADM_INFO_FILE):
       elif x in data_split["test"]:
         x_split = "test"
       else:
-        raise ValueError("Unknown data split.")
+        print(f"Unknown data split 1 {x}") #skip for title
+        continue
+        #raise ValueError("Unknown data split.")
 
       temp_discharge_time = 0 if x not in discharge_time else discharge_time[x]
       temp_death_time = 0 if x not in death_time else death_time[x]
@@ -140,7 +145,13 @@ with open(RAW_DATA, "r") as fp:
   reader = csv.DictReader(fp, delimiter=',', fieldnames=headerList)
   hadm_id = None
   record = None
-  for row in tqdm(reader):
+  for row in tqdm(reader):    
+    try:
+      a = int(row["HADM_ID"])
+    except:
+      print(f"Skipping string hadm_id {row['HADM_ID']}") #skip for title
+      continue
+      
     if row["HADM_ID"] != hadm_id:
       if hadm_id:
         if hadm_id in data_split["train"]:
@@ -150,7 +161,10 @@ with open(RAW_DATA, "r") as fp:
         elif hadm_id in data_split["test"]:
           target = output["test"]
         else:
-          raise ValueError("Unknown data split.")
+          print(row)
+          print(f"Unknown data split 2 {hadm_id}") #skip for title
+          continue
+          #raise ValueError("Unknown data split.")
         if record.shape[0] != 0:
           target[hadm_id] = csr_matrix(record)
       hadm_id = row["HADM_ID"]
@@ -160,10 +174,16 @@ with open(RAW_DATA, "r") as fp:
 
     key = row["EventType"] + row["ITEMID2"]
     # print(f"DXH HELLLOOOOOO {row} \n")
+    try:
+      a = int(row[TIME_KEY])
+    except:
+      print(f"Skipping unparsable time... {row[TIME_KEY]}") #skip for title
+      continue
+
     block = int(row[TIME_KEY]) // WINDOW_LENGTH
     if key not in events_vocabulary:
-      # print("%s not in events vocabulary." % key)
       continue
+      # print("%s not in events vocabulary." % key)
 
     try:
       record[block, events_vocabulary[key]] += 1
@@ -180,7 +200,9 @@ with open(RAW_DATA, "r") as fp:
   elif hadm_id in data_split["test"]:
     target = output["test"]
   else:
-    raise ValueError("Unknown data split.")
+    print(f"Unknown data split 3 {hadm_id}") #skip for title
+    pass
+    #raise ValueError("Unknown data split.")
   if record.shape[0] != 0:
     target[hadm_id] = csr_matrix(record)
 
